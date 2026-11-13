@@ -16,7 +16,7 @@ Aplicación académica que conecta turistas con prestadores habilitados de Ushua
 | Fecha de entrega | 13/11/2026 |
 | Modalidad | Individual |
 | Fecha de corte | 12/11/2026, America/Argentina/Ushuaia |
-| Integrante: nombre y apellido | Rodrigo Herrainz |
+| Integrante | Rodrigo Herrainz |
 | Legajo | 237834 |
 | Correo | rherrainz@alumnos.kennedy.edu.ar |
 | Repositorio | https://github.com/rherrainz/ushlm |
