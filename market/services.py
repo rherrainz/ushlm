@@ -1,4 +1,9 @@
 """All inventory and booking transitions lock provider → offer → booking."""
+from decimal import Decimal
+import hashlib
+import json
+from django.core import signing
+from django.db.models import F
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -21,8 +26,55 @@ def locked_offer(pk):
     offer.provider = provider
     return offer
 
+class OfferChanged(ValidationError):
+    """The visitor must review the current offer before sending again."""
+
+
+def quote_payload(offer):
+    fields = ['title', 'description', 'conditions', 'location', 'starts_at', 'ends_at',
+              'expires_at', 'unit', 'occupancy', 'price', 'reference_price', 'currency', 'category_id']
+    data = {field: str(getattr(offer, field)) for field in fields}
+    for field in ('price', 'reference_price'):
+        data[field] = format(Decimal(str(getattr(offer, field))), '.2f')
+    data.update(provider=offer.provider.name, provider_contact=offer.provider.contact)
+    digest = hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+    return {'offer_id': offer.pk, 'digest': digest}
+
+
+def offer_quote(offer):
+    return signing.dumps(quote_payload(offer), salt='market.offer-quote')
+
+
+def validate_quote(offer, quote):
+    try:
+        accepted = signing.loads(quote, salt='market.offer-quote')
+    except (signing.BadSignature, TypeError):
+        raise OfferChanged('La información enviada no es válida. Revisá la oferta actualizada antes de solicitar.')
+    if accepted != quote_payload(offer):
+        raise OfferChanged('La oferta cambió. Revisá el precio, el total y las condiciones actualizadas antes de volver a solicitar.')
+
+
 @transaction.atomic
-def request_booking(user, offer_id, quantity, contact, token):
+def adjust_inventory(user, offer_id, new_stock, expected_version, *, as_admin=False):
+    offer = locked_offer(offer_id)
+    allowed = (user.is_staff and user.has_perm('market.change_offer')) if as_admin else offer.provider.owner_id == user.pk
+    if not user.is_active or not allowed:
+        raise PermissionDenied('No tenés permiso para ajustar este inventario.')
+    if type(new_stock) is not int or not 0 <= new_stock <= 2147483647:
+        raise ValidationError('El cupo debe ser un entero entre 0 y 2147483647.')
+    if type(expected_version) is not int or expected_version < 0:
+        raise ValidationError('La versión del inventario no es válida.')
+    # Compare and swap in addition to row locks: a stale form cannot restore sold units.
+    changed = Offer.objects.filter(pk=offer.pk, stock_version=expected_version).update(
+        stock=new_stock, stock_version=F('stock_version') + 1)
+    if not changed:
+        raise ValidationError('El inventario cambió desde que abriste el formulario. Revisá el cupo actual y volvé a ajustar.')
+    offer.refresh_from_db()
+    return offer
+
+
+@transaction.atomic
+def request_booking(user, offer_id, quantity, contact, token, quote):
     if not user.is_active or user.is_staff or Provider.objects.filter(owner=user).exists():
         raise PermissionDenied('Las solicitudes son exclusivas del perfil turista.')
     offer = locked_offer(offer_id)
@@ -31,6 +83,7 @@ def request_booking(user, offer_id, quantity, contact, token):
         if existing.tourist_id != user.pk or existing.offer_id != offer.pk:
             raise PermissionDenied
         return existing
+    validate_quote(offer, quote)
     if type(quantity) is not int or quantity <= 0:
         raise ValidationError('La cantidad debe ser un entero positivo.')
     if not contact.strip() or len(contact) > 200:
@@ -61,7 +114,8 @@ def transition(user, booking_id, action, reason=''):
         if not reason.strip(): raise ValidationError('Indicá el motivo de cancelación.')
         if live(offer) and not booking.stock_returned:
             offer.stock += booking.quantity
-            offer.save(update_fields=['stock'])
+            offer.stock_version += 1
+            offer.save(update_fields=['stock', 'stock_version'])
             booking.stock_returned = True
         record(booking, 'cancelled', user, reason)
     else:
@@ -70,7 +124,8 @@ def transition(user, booking_id, action, reason=''):
             if not live(offer) or offer.stock < booking.quantity:
                 raise ValidationError('No se puede confirmar: revisá habilitación, vigencia y cupo.')
             offer.stock -= booking.quantity
-            offer.save(update_fields=['stock'])
+            offer.stock_version += 1
+            offer.save(update_fields=['stock', 'stock_version'])
             record(booking, 'confirmed', user, 'Aceptada por el prestador.')
         elif action == 'reject': record(booking, 'rejected', user, reason)
         else: record(booking, 'cancelled', user, 'Cancelada por el turista.')

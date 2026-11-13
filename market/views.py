@@ -1,16 +1,17 @@
 import uuid
-from datetime import date, timedelta
+from datetime import date
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import DecimalField, ExpressionWrapper, F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-from .forms import BookingForm, OfferForm, SignupForm
+from .forms import BookingForm, InventoryForm, OfferForm, SignupForm
 from .models import Booking, Category, Offer, Provider
-from .services import expire_pending, request_booking, transition
+from .services import (OfferChanged, adjust_inventory, expire_pending, offer_quote,
+                       request_booking, transition, validate_quote)
 
 def catalog(request):
     offers = Offer.objects.available().select_related('provider', 'category')
@@ -21,15 +22,28 @@ def catalog(request):
     if selected_date:
         try: offers = offers.filter(starts_at__date=date.fromisoformat(selected_date))
         except ValueError: error = 'Ingresá una fecha válida.'
-    order = request.GET.get('order', 'expires')
+    order = request.GET.get('order', 'discount')
+    if order not in ('discount', 'expires'):
+        order = 'discount'
     if order == 'discount':
-        offers = offers.annotate(ratio=ExpressionWrapper(F('price') * 1.0 / F('reference_price'), output_field=DecimalField())).order_by('ratio', 'expires_at')
-    else: offers = offers.order_by('expires_at')
-    return render(request, 'market/catalog.html', {'offers': offers, 'categories': Category.objects.all(), 'error':error})
+        offers = offers.annotate(ratio=ExpressionWrapper(F('price') * 1.0 / F('reference_price'), output_field=DecimalField())).order_by('ratio', 'expires_at', 'pk')
+    else: offers = offers.order_by('expires_at', 'pk')
+    return render(request, 'market/catalog.html', {'offers': offers, 'categories': Category.objects.all(), 'error':error, 'order':order})
+
+def detail_context(offer, form):
+    try:
+        quantity = form.fields['quantity'].clean(form['quantity'].value())
+    except ValidationError:
+        quantity = None
+    return {'offer': offer, 'form': form, 'preview_quantity': quantity,
+            'preview_total': offer.price * quantity if quantity else None,
+            'unit_cents': int(offer.price * 100)}
+
 
 def detail(request, pk):
     offer = get_object_or_404(Offer.objects.available().select_related('provider', 'category'), pk=pk)
-    return render(request, 'market/detail.html', {'offer': offer, 'form': BookingForm(initial={'token':uuid.uuid4(), 'quantity':1})})
+    form = BookingForm(initial={'token':uuid.uuid4(), 'quantity':1, 'quote':offer_quote(offer)})
+    return render(request, 'market/detail.html', detail_context(offer, form))
 
 def signup(request):
     form = SignupForm(request.POST or None)
@@ -44,13 +58,27 @@ def signup(request):
 def book(request, pk):
     offer = get_object_or_404(Offer, pk=pk)
     form = BookingForm(request.POST)
+    status = 400
     if form.is_valid():
         try:
+            if request.POST.get('intent') == 'preview':
+                validate_quote(offer, form.cleaned_data['quote'])
+                return render(request, 'market/detail.html', detail_context(offer, form))
             request_booking(request.user, pk, **form.cleaned_data)
             messages.success(request, 'Solicitud enviada. Está pendiente: todavía no garantiza disponibilidad. El pago se coordina con el prestador.')
             return redirect('bookings')
-        except ValidationError as exc: form.add_error(None, exc)
-    return render(request, 'market/detail.html', {'offer':offer, 'form':form}, status=400)
+        except OfferChanged as exc:
+            # Preserve quantity, contact and idempotency token, but require a fresh review.
+            offer.refresh_from_db()
+            data = request.POST.copy()
+            data['quote'] = offer_quote(offer)
+            form = BookingForm(data)
+            form.is_valid()
+            form.add_error(None, exc)
+            status = 409
+        except ValidationError as exc:
+            form.add_error(None, exc)
+    return render(request, 'market/detail.html', detail_context(offer, form), status=status)
 
 @login_required
 def bookings(request):
@@ -80,10 +108,14 @@ def edit_offer(request, pk=None):
         instance.provider = provider
         form = OfferForm(request.POST or None, instance=instance)
         if request.method == 'POST' and form.is_valid():
-            form.save()
-            messages.success(request, 'Oferta guardada.')
+            offer = form.save(commit=False)
+            if offer.pk:
+                offer.save(update_fields=list(form.fields))
+            else:
+                offer.save()
+            messages.success(request, 'Oferta guardada. El cupo se modifica por separado en Ajustar disponibilidad.')
             return redirect('dashboard')
-    return render(request, 'market/form.html', {'form':form, 'title':'Editar oferta' if pk else 'Nueva oferta'})
+    return render(request, 'market/form.html', {'form':form, 'title':'Editar oferta' if pk else 'Nueva oferta', 'offer':instance, 'inventory_separate':True})
 
 @login_required
 @require_POST
@@ -94,3 +126,32 @@ def action(request, pk, action):
         messages.success(request, 'Estado actualizado.')
     except ValidationError as exc: messages.error(request, ' '.join(exc.messages))
     return redirect('bookings' if action == 'cancel_pending' else 'dashboard')
+
+
+@login_required
+def inventory(request, pk):
+    provider = own_provider(request.user)
+    offer = get_object_or_404(Offer, pk=pk, provider=provider)
+    return inventory_form_view(request, offer)
+
+
+def inventory_form_view(request, offer, *, as_admin=False):
+    form = InventoryForm(request.POST if request.method == 'POST' else None,
+                         initial={'new_stock':offer.stock, 'expected_version':offer.stock_version})
+    status = 200
+    if request.method == 'POST':
+        if form.is_valid():
+            try:
+                adjust_inventory(request.user, offer.pk, as_admin=as_admin, **form.cleaned_data)
+                messages.success(request, 'Disponibilidad actualizada.')
+                return redirect('admin:market_offer_change', offer.pk) if as_admin else redirect('dashboard')
+            except ValidationError as exc:
+                form.add_error(None, exc)
+                status = 409
+        else:
+            status = 400
+        offer.refresh_from_db()
+        # Keep the submitted version on failure. Reopening is an explicit review step;
+        # a second blind submit must not turn a stale adjustment into a valid one.
+    template = 'admin/market/inventory.html' if as_admin else 'market/inventory.html'
+    return render(request, template, {'form':form, 'offer':offer, 'title':'Ajustar disponibilidad'}, status=status)

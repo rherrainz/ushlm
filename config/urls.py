@@ -7,5 +7,6 @@ urlpatterns = [
     path('ofertas/<int:pk>/', views.detail, name='detail'), path('ofertas/<int:pk>/solicitar/', views.book, name='book'),
     path('mis-solicitudes/', views.bookings, name='bookings'), path('prestador/', views.dashboard, name='dashboard'),
     path('prestador/nueva/', views.edit_offer, name='new_offer'), path('prestador/ofertas/<int:pk>/', views.edit_offer, name='edit_offer'),
+    path('prestador/ofertas/<int:pk>/inventario/', views.inventory, name='inventory'),
     path('solicitudes/<int:pk>/<str:action>/', views.action, name='action'),
 ]

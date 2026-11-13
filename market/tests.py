@@ -12,7 +12,7 @@ from django.test import TestCase, TransactionTestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from .models import Booking, BookingHistory, Category, Offer, Provider
-from .services import expire_pending, request_booking, transition
+from .services import adjust_inventory, expire_pending, offer_quote, request_booking, transition
 
 class Fixtures:
     def setUp(self):
@@ -24,7 +24,7 @@ class Fixtures:
         now = timezone.now()
         self.offer = Offer.objects.create(provider=self.provider, category=self.category, title='Beagle', description='Original', location='Ushuaia', starts_at=now+timedelta(hours=24), ends_at=now+timedelta(hours=26), expires_at=now+timedelta(hours=20), unit='persona', reference_price=100, price=70, currency='ARS', stock=2, conditions='Condiciones originales', status='published')
     def request(self, user=None, quantity=1, token=None):
-        return request_booking(user or self.tourist, self.offer.pk, quantity, 'demo@example.invalid', token or uuid.uuid4())
+        return request_booking(user or self.tourist, self.offer.pk, quantity, 'demo@example.invalid', token or uuid.uuid4(), offer_quote(Offer.objects.get(pk=self.offer.pk)))
 
 class RulesTests(Fixtures, TestCase):
     def test_invalid_prices(self):
@@ -202,7 +202,7 @@ class WebTests(Fixtures, TestCase):
         self.assertEqual(Booking.objects.count(),0)
     def test_full_flow_and_private_lists(self):
         self.client.force_login(self.tourist)
-        self.client.post(reverse('book',args=[self.offer.pk]), {'quantity':1,'contact':'privado@example.invalid','token':uuid.uuid4()})
+        self.client.post(reverse('book', args=[self.offer.pk]), dict(quantity=1, contact='privado@example.invalid', token=uuid.uuid4(), quote=offer_quote(Offer.objects.get(pk=self.offer.pk))))
         booking = Booking.objects.get()
         self.assertContains(self.client.get('/mis-solicitudes/'),'Pendiente')
         self.client.force_login(self.other)
@@ -288,3 +288,19 @@ class PostgreSQLConcurrencyTests(Fixtures, TransactionTestCase):
         with ThreadPoolExecutor(max_workers=2) as pool: results=list(pool.map(cancel,range(2)))
         self.assertCountEqual(results,[True,False])
         self.offer.refresh_from_db(); self.assertEqual(self.offer.stock,2)
+
+    def test_concurrent_inventory_adjustments_detect_conflict(self):
+        barrier = Barrier(2)
+        def adjust(stock):
+            try:
+                user = User.objects.get(pk=self.owner.pk)
+                barrier.wait(timeout=10)
+                try: adjust_inventory(user,self.offer.pk,stock,0); return True
+                except ValidationError: return False
+            finally: connections.close_all()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(adjust,[4,5]))
+        self.assertCountEqual(results,[True,False])
+        self.offer.refresh_from_db()
+        self.assertIn(self.offer.stock,[4,5])
+        self.assertEqual(self.offer.stock_version,1)
