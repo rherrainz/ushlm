@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from market import views
 urlpatterns = [
+    path('acerca-de/', views.about, name='about'),
     path('admin/', admin.site.urls), path('cuenta/', include('django.contrib.auth.urls')),
     path('registro/', views.signup, name='signup'), path('', views.catalog, name='catalog'),
     path('ofertas/<int:pk>/', views.detail, name='detail'), path('ofertas/<int:pk>/solicitar/', views.book, name='book'),

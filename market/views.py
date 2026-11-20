@@ -155,3 +155,7 @@ def inventory_form_view(request, offer, *, as_admin=False):
         # a second blind submit must not turn a stale adjustment into a valid one.
     template = 'admin/market/inventory.html' if as_admin else 'market/inventory.html'
     return render(request, template, {'form':form, 'offer':offer, 'title':'Ajustar disponibilidad'}, status=status)
+
+
+def about(request):
+    return render(request, "market/about.html")
