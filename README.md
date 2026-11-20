@@ -221,6 +221,61 @@ Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega e
 
 ## 9. Limitaciones y referencias
 
-Pendientes reales: revisión visual de las correcciones, concurrencia en PostgreSQL y revisión de textos/condiciones comerciales. La aplicación es una demostración local; no incluye configuración de producción, envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
+Pendientes reales: revisión visual de las correcciones, concurrencia en PostgreSQL y revisión de textos/condiciones comerciales. La aplicación cuenta ahora con preparación para Vercel y Neon (apartado 10); el despliegue y la evaluación remota siguen pendientes. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
+
+## 10. Implementación final: Vercel + Neon
+
+Preparación del despliegue: 20/11/2026. Esta sección documenta la configuración entregada y la evaluación pendiente del entorno remoto; no acredita un despliegue ya realizado ni cambia el avance histórico del apartado 6.
+
+### Conectar desde GitHub
+
+1. Crear un proyecto PostgreSQL en Neon y guardar su cadena de conexión. Usar una conexión agrupada (host con `-pooler`) para la aplicación; para migraciones, preferir la conexión directa. Ambas deben exigir `sslmode=require`. No compartir las cadenas ni incluirlas en Git.
+2. En Vercel, importar `rherrainz/ushlm`, seleccionar la rama que contenga estos cambios y dejar la raíz en `./`. Usar la detección nativa de **Django**, sin carpeta `api`, sin reglas de reescritura y sin comandos de migración en el build. `.python-version` selecciona Python 3.14; el entrypoint es `config/wsgi.py`.
+3. Configurar las siguientes variables antes del primer deploy:
+
+| Variable | Valor |
+|---|---|
+| `DATABASE_URL` | Cadena de Neon, agrupada y con TLS. |
+| `DJANGO_SECRET_KEY` | Secreto privado estable, generado con `python -c "import secrets; print(secrets.token_urlsafe(64))"`. |
+| `DJANGO_DEBUG` | `0` |
+| `DJANGO_ALLOWED_HOSTS` | Dominio asignado al proyecto; agregar dominios propios solo cuando estén conectados. Separar por comas, sin `https://`. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Orígenes exactos, por ejemplo `https://tu-proyecto.vercel.app`; separados por comas. |
+
+Vercel aporta `VERCEL=1` y sus URLs de despliegue; las URLs exactas se incorporan a los hosts permitidos. No se permite `DEBUG=1` ni fallback a SQLite en Vercel. Las conexiones PostgreSQL de la aplicación no se mantienen abiertas entre solicitudes y los cursores del servidor están deshabilitados para compatibilidad con el pool. Usar una base o rama Neon separada para Preview: los despliegues de prueba no deben escribir sobre la base productiva.
+
+4. Vercel ejecuta `collectstatic` automáticamente y sirve CSS, JavaScript y estáticos de administración mediante su CDN. No es necesario instalar WhiteNoise para este destino ni cargar archivos en el disco de la función. Las sesiones y los datos del proyecto viven en PostgreSQL.
+5. Preparar la base desde un entorno local confiable, antes de habilitar la demostración pública. Cargar la conexión **directa** en una variable `DATABASE_URL` de ese entorno y `DJANGO_SECRET_KEY` con el secreto correspondiente. No pegar secretos en comandos versionados. Ejecutar:
+
+```sh
+python manage.py migrate --noinput
+python manage.py createsuperuser
+python manage.py check
+```
+
+Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
+
+6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: [PENDIENTE]** y **fecha de implementación: [PENDIENTE]** únicamente después de comprobarlos.
+
+### Pruebas antes de la puesta en marcha
+
+El workflow `.github/workflows/tests.yml` ejecuta la suite con PostgreSQL 17, incluidas las pruebas concurrentes, además de las pruebas JavaScript. Se dispara al publicar cambios o abrir una PR. Su existencia no equivale a un resultado aprobado: revisar la ejecución en GitHub Actions y registrar el enlace.
+
+Las pruebas de PostgreSQL deben apuntar a una base de evaluación con permiso de crear una base temporal, nunca a la base del sitio publicado. La suite SQLite conserva su utilidad local pero omite expresamente la concurrencia. La preparación no depende de tener Docker instalado para desplegar: GitHub Actions proporciona el servicio PostgreSQL de pruebas.
+
+### Evaluación, mantenimiento y reversión
+
+- La vigencia se controla en el servidor al confirmar. Los listados actualizan pendientes vencidas. Para materializarlas aun sin visitas, ejecutar periódicamente `python manage.py expire_pending` desde un ejecutor externo con las variables privadas de la base. No se promete una tarea en segundo plano permanente dentro de la función Vercel.
+- Revisar errores y latencias desde los logs de Vercel sin imprimir contactos ni credenciales. Verificar que Neon esté disponible y dimensionar conexiones según el plan elegido.
+- Mantener copias de seguridad y comprobar una restauración en una base separada. Un rollback de Vercel revierte código, **no** los datos ni las migraciones de PostgreSQL. Antes de cambios de esquema, verificar compatibilidad y disponer de respaldo.
+- La aplicación sigue sin cobros, envío de correos ni recuperación de contraseña configurada. Son exclusiones del alcance; no deben anunciarse como funciones operativas.
+
+| Evidencia de evaluación final | Resultado |
+|---|---|
+| Pruebas locales y configuración | 20/11/2026: 56 pruebas Django, 52 aprobadas y 4 omitidas por PostgreSQL; 3 pruebas JavaScript aprobadas; migraciones sincronizadas y 130 estáticos recopilados. |
+| PostgreSQL concurrente en GitHub Actions | Pendiente de publicación y ejecución del workflow. |
+| Recorrido en URL Vercel y adaptación móvil | Pendiente del despliegue. |
+| Registro de incidentes y correcciones remotas | Completar si se detectan problemas durante la evaluación. |
+
+Documentación técnica de despliegue consultada el 20/11/2026: [Django en Vercel](https://vercel.com/docs/frameworks/full-stack/django). No se declara el proyecto evaluado en producción mientras estas comprobaciones remotas estén pendientes.
