@@ -2,7 +2,7 @@
 
 ## 1. Presentación
 
-**Informe:** Avance de implementación y demostración funcional — Taller de Proyectos II.
+**Informe:** Implementación y evaluación final — Taller de Proyectos II.
 
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
@@ -147,7 +147,7 @@ Esperar que la base esté lista. Las pruebas crean y destruyen `test_ushlm`; no 
 
 Son operaciones conectadas a la base, con pruebas HTTP. Las correcciones de esta revisión no tienen validación visual ni de concurrencia PostgreSQL ejecutadas. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
 
-## 6. Estado y porcentaje de avance
+## 6. Estado y porcentaje de avance (corte histórico)
 
 **Corte: 12/11/2026. Avance funcional con evidencia: 80/100 (80 %).** Estimación del alcance y su verificación; no es cobertura de líneas ni certificación de producción.
 
@@ -221,6 +221,73 @@ Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega e
 
 ## 9. Limitaciones y referencias
 
-Pendientes reales: revisión visual de las correcciones, concurrencia en PostgreSQL y revisión de textos/condiciones comerciales. La aplicación es una demostración local; no incluye configuración de producción, envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
+Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación cuenta ahora con preparación para Vercel y Neon (apartado 10); el despliegue y la evaluación remota siguen pendientes. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
+
+## 10. Implementación y evaluación final: Vercel + Neon
+
+Implementación final: 20/11/2026. Proyecto Vercel `rherrainzs-projects/ushlm`, vinculado a este repositorio, con Django y base Neon gratuita en `iad1`. La tabla del apartado 6 conserva el corte histórico de avance; la evaluación final se registra al final de este apartado.
+
+### Conectar desde GitHub
+
+1. Crear un proyecto PostgreSQL en Neon y guardar su cadena de conexión. Usar una conexión agrupada (host con `-pooler`) para la aplicación; para migraciones, preferir la conexión directa. Ambas deben exigir `sslmode=require`. No compartir las cadenas ni incluirlas en Git.
+2. En Vercel, importar `rherrainz/ushlm`, seleccionar la rama que contenga estos cambios y dejar la raíz en `./`. Usar la detección nativa de **Django**, sin carpeta `api`, sin reglas de reescritura y sin comandos de migración en el build. `.python-version` selecciona Python 3.14; el entrypoint es `config/wsgi.py`.
+3. Configurar las siguientes variables antes del primer deploy:
+
+| Variable | Valor |
+|---|---|
+| `DATABASE_URL` | Cadena de Neon, agrupada y con TLS. |
+| `DJANGO_SECRET_KEY` | Secreto privado estable, generado con `python -c "import secrets; print(secrets.token_urlsafe(64))"`. |
+| `DJANGO_DEBUG` | `0` |
+| `DJANGO_ALLOWED_HOSTS` | Dominio asignado al proyecto; agregar dominios propios solo cuando estén conectados. Separar por comas, sin `https://`. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Orígenes exactos, por ejemplo `https://tu-proyecto.vercel.app`; separados por comas. |
+
+Vercel aporta `VERCEL=1` y sus URLs de despliegue; las URLs exactas se incorporan a los hosts permitidos. No se permite `DEBUG=1` ni fallback a SQLite en Vercel. Las conexiones PostgreSQL de la aplicación no se mantienen abiertas entre solicitudes y los cursores del servidor están deshabilitados para compatibilidad con el pool. Usar una base o rama Neon separada para Preview: los despliegues de prueba no deben escribir sobre la base productiva.
+
+4. Vercel ejecuta `collectstatic` automáticamente y sirve CSS, JavaScript y estáticos de administración mediante su CDN. No es necesario instalar WhiteNoise para este destino ni cargar archivos en el disco de la función. Las sesiones y los datos del proyecto viven en PostgreSQL.
+5. Preparar la base desde un entorno local confiable, antes de habilitar la demostración pública. Cargar la conexión **directa** en una variable `DATABASE_URL` de ese entorno y `DJANGO_SECRET_KEY` con el secreto correspondiente. No pegar secretos en comandos versionados. Ejecutar:
+
+```sh
+python manage.py migrate --noinput
+python manage.py createsuperuser
+python manage.py check
+```
+
+Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
+
+6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: [PENDIENTE]** y **fecha de implementación: 20/11/2026** únicamente después de comprobarlos.
+
+### Pruebas antes de la puesta en marcha
+
+El workflow `.github/workflows/tests.yml` ejecuta la suite con PostgreSQL 17, incluidas las pruebas concurrentes, además de las pruebas JavaScript. Se dispara al publicar cambios o abrir una PR. Su existencia no equivale a un resultado aprobado: revisar la ejecución en GitHub Actions y registrar el enlace.
+
+Las pruebas de PostgreSQL deben apuntar a una base de evaluación con permiso de crear una base temporal, nunca a la base del sitio publicado. La suite SQLite conserva su utilidad local pero omite expresamente la concurrencia. La preparación no depende de tener Docker instalado para desplegar: GitHub Actions proporciona el servicio PostgreSQL de pruebas.
+
+### Evaluación, mantenimiento y reversión
+
+- La vigencia se controla en el servidor al confirmar. Los listados actualizan pendientes vencidas. Para materializarlas aun sin visitas, ejecutar periódicamente `python manage.py expire_pending` desde un ejecutor externo con las variables privadas de la base. No se promete una tarea en segundo plano permanente dentro de la función Vercel.
+- Revisar errores y latencias desde los logs de Vercel sin imprimir contactos ni credenciales. Verificar que Neon esté disponible y dimensionar conexiones según el plan elegido.
+- Mantener copias de seguridad y comprobar una restauración en una base separada. Un rollback de Vercel revierte código, **no** los datos ni las migraciones de PostgreSQL. Antes de cambios de esquema, verificar compatibilidad y disponer de respaldo.
+- La aplicación sigue sin cobros, envío de correos ni recuperación de contraseña configurada. Son exclusiones del alcance; no deben anunciarse como funciones operativas.
+
+| Evidencia de evaluación final | Resultado |
+|---|---|
+| Pruebas locales y configuración | 20/11/2026: 56 pruebas Django, 52 aprobadas y 4 omitidas por PostgreSQL; 3 pruebas JavaScript aprobadas; migraciones sincronizadas y 130 estáticos recopilados. |
+| PostgreSQL real en Neon (base de evaluación separada) | 20/11/2026: 56 pruebas aprobadas, sin omisiones, en 639,271 s. Incluye las 4 de concurrencia. La base de pruebas y la base auxiliar se eliminaron al finalizar. |
+| Recorrido en URL Vercel y adaptación móvil | Aprobado el circuito de login, total, solicitud, confirmación, descuento de cupo e historial; catálogo a 390 px sin desbordes. |
+| Registro de incidentes y correcciones remotas | Error inicial de tablas ausentes resuelto con migraciones; formato de hora del contador fijado a 24 h; función ubicada junto a Neon. |
+
+Documentación técnica de despliegue consultada el 20/11/2026: [Django en Vercel](https://vercel.com/docs/frameworks/full-stack/django). La suite en PostgreSQL real y el recorrido descrito fueron ejecutados; la automatización de GitHub Actions se configura adicionalmente y no se presenta como una ejecución observada.
+
+### Registro de evaluación del entorno desplegado
+
+- Migraciones de Django aplicadas en Neon; tres categorías y ofertas ficticias creadas. La contraseña aleatoria de las cuentas demo se conserva únicamente en un archivo local excluido de Git y no se publica en este README.
+- Recorrido real en navegador: login como turista, detalle de oferta, total previo de dos unidades (ARS 118.000), envío pendiente y acceso con prestador. La solicitud ficticia #1 fue confirmada con autorización; el cupo bajó de 4 a 2 y el historial registró la transición. Se cerró la sesión del prestador al terminar.
+- Catálogo revisado a 390 px, sin desbordamiento horizontal. Esto es una comprobación móvil acotada, no una auditoría completa de accesibilidad ni una prueba en todos los dispositivos.
+- Evidencia del circuito: [confirmación y cupo](evidencias/confirmacion-demo.jpg). Evidencia móvil: [catálogo](evidencias/catalogo-movil.jpg).
+- Durante la puesta en marcha se registraron errores iniciales por tablas todavía no migradas. Se aplicaron las migraciones y después se verificaron catálogo, login y solicitud correctamente.
+- Se fijó la región de la función en `iad1`, junto a Neon, y el contador usa formato de 24 horas para evitar ambigüedad en el vencimiento.
+- Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
+
+Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. El paso posterior del script auxiliar de pruebas tuvo un error de ruta de importación; la migración y semilla del sitio se ejecutaron correctamente mediante un proceso independiente.
