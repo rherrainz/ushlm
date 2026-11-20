@@ -4,6 +4,8 @@
 
 **Informe:** Implementación y evaluación final — Taller de Proyectos II.
 
+**Aplicación:** https://ushlm-rherrainzs-projects.vercel.app/ · **Entrega final:** 20/11/2026.
+
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
 Aplicación académica que conecta turistas con prestadores habilitados de Ushuaia para ofrecer descuentos en excursiones, estadías y alquileres de autos que comienzan dentro de las próximas 72 horas. El objetivo de la entrega es demostrar un circuito operativo con datos ficticios y evidencia reproducible.
@@ -256,7 +258,7 @@ python manage.py check
 
 Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
 
-6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: [PENDIENTE]** y **fecha de implementación: 20/11/2026** únicamente después de comprobarlos.
+6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: https://ushlm-rherrainzs-projects.vercel.app/** y **fecha de implementación: 20/11/2026** únicamente después de comprobarlos.
 
 ### Pruebas antes de la puesta en marcha
 
@@ -290,4 +292,4 @@ Documentación técnica de despliegue consultada el 20/11/2026: [Django en Verce
 - Se fijó la región de la función en `iad1`, junto a Neon, y el contador usa formato de 24 horas para evitar ambigüedad en el vencimiento.
 - Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
 
-Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. El paso posterior del script auxiliar de pruebas tuvo un error de ruta de importación; la migración y semilla del sitio se ejecutaron correctamente mediante un proceso independiente.
+Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. La migración y la carga de datos de demostración del sitio también finalizaron correctamente.
