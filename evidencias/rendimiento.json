@@ -1,0 +1,514 @@
+{
+  "date": "2026-11-20",
+  "environment": "Darwin arm64, Django development server local, Neon PostgreSQL iad1 isolated database; includes database network latency, excludes Vercel HTTPS/CDN",
+  "offers": 500,
+  "concurrent_clients": 20,
+  "requests": 100,
+  "p95_seconds": 2.2694316249999247,
+  "median_seconds": 2.1433737710003697,
+  "request_results": [
+    {
+      "seconds": 2.0828091250004945,
+      "status": 200,
+      "bytes": 15677
+    },
+    {
+      "seconds": 2.215321458001199,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.268466957999408,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.073219166999479,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.206022624999605,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.080833416999667,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.2674397909995605,
+      "status": 200,
+      "bytes": 15750
+    },
+    {
+      "seconds": 2.1003361659986695,
+      "status": 200,
+      "bytes": 15749
+    },
+    {
+      "seconds": 2.2671661249987665,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.0922123340005783,
+      "status": 200,
+      "bytes": 15753
+    },
+    {
+      "seconds": 2.1906221250010276,
+      "status": 200,
+      "bytes": 15758
+    },
+    {
+      "seconds": 2.2694316249999247,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2676072499998554,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2281727919998957,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2051231659988844,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2516227910000453,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2852794999998878,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2847202499997366,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2398520410006313,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.285611750001408,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.126754249999067,
+      "status": 200,
+      "bytes": 15677
+    },
+    {
+      "seconds": 2.118806083999516,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.1056629579998116,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.072446750000381,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.086100874999829,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.1124205000014626,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.0903167920005217,
+      "status": 200,
+      "bytes": 15750
+    },
+    {
+      "seconds": 2.3261895420000656,
+      "status": 200,
+      "bytes": 15749
+    },
+    {
+      "seconds": 2.284596874998897,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.221859666000455,
+      "status": 200,
+      "bytes": 15753
+    },
+    {
+      "seconds": 2.2014776670002902,
+      "status": 200,
+      "bytes": 15758
+    },
+    {
+      "seconds": 2.19025291700018,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2658615419986745,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2188967500005674,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2377008749990637,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2309027499995864,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2424547919999895,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1624375419996795,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2326446249990113,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1553729999995994,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.117901040999641,
+      "status": 200,
+      "bytes": 15677
+    },
+    {
+      "seconds": 2.0751537500000268,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.1059849169996596,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.0850796670001728,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.084629582999696,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.1147287499989034,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.0932047499991313,
+      "status": 200,
+      "bytes": 15750
+    },
+    {
+      "seconds": 2.2035344169999007,
+      "status": 200,
+      "bytes": 15749
+    },
+    {
+      "seconds": 2.2228039170004195,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.246168875000876,
+      "status": 200,
+      "bytes": 15753
+    },
+    {
+      "seconds": 2.1901393749994895,
+      "status": 200,
+      "bytes": 15758
+    },
+    {
+      "seconds": 2.2156757499997184,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2136345420003636,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1927662500002043,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1670460000004823,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.111376958000619,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.186897042000055,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.0952106660006393,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1275964169999497,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1128599160001613,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1414239999994606,
+      "status": 200,
+      "bytes": 15677
+    },
+    {
+      "seconds": 2.1221737080013554,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.1110473749995435,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.109846750001452,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.102401750000354,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.097082791999128,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.0839691660003155,
+      "status": 200,
+      "bytes": 15750
+    },
+    {
+      "seconds": 2.105110333999619,
+      "status": 200,
+      "bytes": 15749
+    },
+    {
+      "seconds": 2.088279000001421,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.0811847080003645,
+      "status": 200,
+      "bytes": 15753
+    },
+    {
+      "seconds": 2.0843491249997896,
+      "status": 200,
+      "bytes": 15758
+    },
+    {
+      "seconds": 2.1747747080007684,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.2165559169989137,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1616635829996085,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1891163749987754,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.210232833000191,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.153975999999602,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1862672499992186,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.158268124998358,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.144924332998926,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.0832595829997445,
+      "status": 200,
+      "bytes": 15677
+    },
+    {
+      "seconds": 2.064197084000625,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.069964374999472,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.048831500000233,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.0654555829987657,
+      "status": 200,
+      "bytes": 15747
+    },
+    {
+      "seconds": 2.089931833001174,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.110032915999909,
+      "status": 200,
+      "bytes": 15750
+    },
+    {
+      "seconds": 2.1051466670014634,
+      "status": 200,
+      "bytes": 15749
+    },
+    {
+      "seconds": 2.0766791660007584,
+      "status": 200,
+      "bytes": 15751
+    },
+    {
+      "seconds": 2.088924458999827,
+      "status": 200,
+      "bytes": 15753
+    },
+    {
+      "seconds": 2.0564889589986706,
+      "status": 200,
+      "bytes": 15758
+    },
+    {
+      "seconds": 2.0885120410002855,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.197564459000205,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1597050840009615,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.165273166001498,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1303095829989616,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.134352958999443,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1213579579998623,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.143625292001161,
+      "status": 200,
+      "bytes": 15757
+    },
+    {
+      "seconds": 2.1431222499995783,
+      "status": 200,
+      "bytes": 15757
+    }
+  ],
+  "errors": 0,
+  "criterion": "p95 < 3 seconds",
+  "passed": true
+}

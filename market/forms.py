@@ -20,6 +20,7 @@ class OfferForm(forms.ModelForm):
     class Meta:
         model = Offer
         exclude = ['provider', 'stock', 'stock_version']
+        labels = {'category': 'Categoría'}
         widgets = {name: forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type':'datetime-local'}) for name in ['starts_at', 'ends_at', 'expires_at']}
 
 

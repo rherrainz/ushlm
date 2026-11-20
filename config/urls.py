@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from market import views
 urlpatterns = [
+    path('avisos/', views.notifications, name='notifications'),
+    path('avisos/<int:pk>/leer/', views.read_notification, name='read_notification'),
     path('acerca-de/', views.about, name='about'),
     path('admin/', admin.site.urls), path('cuenta/', include('django.contrib.auth.urls')),
     path('registro/', views.signup, name='signup'), path('', views.catalog, name='catalog'),

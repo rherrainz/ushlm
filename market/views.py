@@ -4,12 +4,14 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import DecimalField, ExpressionWrapper, F
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from .forms import BookingForm, InventoryForm, OfferForm, SignupForm
-from .models import Booking, Category, Offer, Provider
+from .models import Booking, Category, Offer, Provider, Notification
 from .services import (OfferChanged, adjust_inventory, expire_pending, offer_quote,
                        request_booking, transition, validate_quote)
 
@@ -23,12 +25,22 @@ def catalog(request):
         try: offers = offers.filter(starts_at__date=date.fromisoformat(selected_date))
         except ValueError: error = 'Ingresá una fecha válida.'
     order = request.GET.get('order', 'discount')
-    if order not in ('discount', 'expires'):
+    if order not in ('discount', 'expires', 'price'):
         order = 'discount'
-    if order == 'discount':
+    currency = request.GET.get('currency', '')
+    if currency in ('ARS', 'USD'): offers = offers.filter(currency=currency)
+    elif order == 'price':
+        error = 'Elegí una moneda para ordenar por precio.'
+        order = 'discount'
+    if order == 'price':
+        offers = offers.order_by('price', 'expires_at', 'pk')
+    elif order == 'discount':
         offers = offers.annotate(ratio=ExpressionWrapper(F('price') * 1.0 / F('reference_price'), output_field=DecimalField())).order_by('ratio', 'expires_at', 'pk')
     else: offers = offers.order_by('expires_at', 'pk')
-    return render(request, 'market/catalog.html', {'offers': offers, 'categories': Category.objects.all(), 'error':error, 'order':order})
+    page = Paginator(offers, 24).get_page(request.GET.get('page'))
+    filters = request.GET.copy()
+    filters.pop('page', None)
+    return render(request, 'market/catalog.html', {'offers': page, 'page_obj': page, 'filter_query':filters.urlencode(), 'categories': Category.objects.all(), 'error':error, 'order':order, 'currency':currency})
 
 def detail_context(offer, form):
     try:
@@ -109,6 +121,8 @@ def edit_offer(request, pk=None):
         form = OfferForm(request.POST or None, instance=instance)
         if request.method == 'POST' and form.is_valid():
             offer = form.save(commit=False)
+            if request.POST.get('intent') == 'preview':
+                return render(request, 'market/offer_preview.html', {'offer':offer, 'form':form, 'title':'Revisá tu publicación'})
             if offer.pk:
                 offer.save(update_fields=list(form.fields))
             else:
@@ -159,3 +173,16 @@ def inventory_form_view(request, offer, *, as_admin=False):
 
 def about(request):
     return render(request, "market/about.html")
+
+
+@login_required
+def notifications(request):
+    items = Notification.objects.filter(recipient=request.user).select_related('offer', 'booking')
+    return render(request, 'market/notifications.html', {'notifications': items})
+
+@login_required
+@require_POST
+def read_notification(request, pk):
+    item = get_object_or_404(Notification, pk=pk, recipient=request.user)
+    Notification.objects.filter(pk=item.pk, read_at__isnull=True).update(read_at=timezone.now())
+    return redirect('notifications')

@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-20",
+  "source": "Neon PostgreSQL isolated evaluation database",
+  "destination": "new Neon PostgreSQL isolated recovery database",
+  "seconds": 321.5802179589991,
+  "file_permissions": "0o600",
+  "checks": {
+    "auth.User": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Provider": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Category": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Offer": {
+      "source_rows": 500,
+      "restored_rows": 500,
+      "all_fields_equal": true
+    },
+    "market.Booking": {
+      "source_rows": 0,
+      "restored_rows": 0,
+      "all_fields_equal": true
+    },
+    "market.BookingHistory": {
+      "source_rows": 0,
+      "restored_rows": 0,
+      "all_fields_equal": true
+    },
+    "market.Notification": {
+      "source_rows": 0,
+      "restored_rows": 0,
+      "all_fields_equal": true
+    },
+    "market.OfferModeration": {
+      "source_rows": 0,
+      "restored_rows": 0,
+      "all_fields_equal": true
+    }
+  },
+  "passed": true,
+  "scope": "Logical backup, migration, restoration and comparison of all fields. Daily production backup scheduling is still pending."
+}

@@ -7,17 +7,20 @@ from django.db.models import F
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
-from .models import Booking, BookingHistory, Offer, Provider
+from .models import Booking, BookingHistory, Offer, Provider, Notification, OfferModeration
 
 def record(booking, state, actor=None, reason=''):
     previous = booking.status
     booking.status = state
     booking.save(update_fields=['status', 'updated_at', 'stock_returned'])
     BookingHistory.objects.create(booking=booking, actor=actor, previous=previous, current=state, reason=reason)
+    recipients = {booking.tourist_id, booking.offer.provider.owner_id}
+    if actor: recipients.discard(actor.pk)
+    Notification.objects.bulk_create([Notification(recipient_id=pk, booking=booking, offer_id=booking.offer_id, message=f'Solicitud #{booking.pk}: {booking.get_status_display()}.') for pk in recipients])
 
 def live(offer):
     now = timezone.now()
-    return offer.status == 'published' and offer.provider.enabled and offer.provider.owner.is_active and offer.expires_at > now and offer.starts_at > now
+    return not offer.moderated and offer.status == 'published' and offer.provider.enabled and offer.provider.owner.is_active and offer.expires_at > now and offer.starts_at > now
 
 def locked_offer(pk):
     provider_id = Offer.objects.values_list('provider_id', flat=True).get(pk=pk)
@@ -92,6 +95,7 @@ def request_booking(user, offer_id, quantity, contact, token, quote):
         raise ValidationError('La oferta ya no está disponible o no tiene cupo suficiente.')
     booking = Booking.objects.create(tourist=user, offer=offer, quantity=quantity, contact=contact, token=token, price=offer.price, currency=offer.currency, description=offer.description, conditions=offer.conditions, service={'title': offer.title, 'starts_at': offer.starts_at.isoformat(), 'ends_at': offer.ends_at.isoformat(), 'location': offer.location, 'unit': offer.unit, 'occupancy': offer.occupancy, 'provider': offer.provider.name, 'provider_contact': offer.provider.contact})
     BookingHistory.objects.create(booking=booking, actor=user, previous='', current='pending', reason='Solicitud creada; no reserva cupo.')
+    Notification.objects.create(recipient=offer.provider.owner, booking=booking, offer=offer, message=f'Nueva solicitud #{booking.pk} para {offer.title}.'[:300])
     return booking
 
 @transaction.atomic
@@ -142,3 +146,20 @@ def expire_pending():
                 record(booking, 'expired', reason='Venció la oferta.')
                 count += 1
     return count
+
+@transaction.atomic
+def moderate_offer(user, offer_id, reason):
+    if not user.is_active or not user.is_staff or not user.has_perm('market.change_offer'):
+        raise PermissionDenied
+    if not reason.strip():
+        raise ValidationError('Indicá el motivo del retiro.')
+    offer = locked_offer(offer_id)
+    if offer.status == Offer.Status.CLOSED:
+        raise ValidationError('La oferta ya está cerrada.')
+    OfferModeration.objects.create(offer=offer, actor=user, reason=reason.strip(), previous=offer.status)
+    offer.status = Offer.Status.CLOSED
+    offer.moderated = True
+    offer.save(update_fields=['status', 'moderated'])
+    Notification.objects.create(recipient=offer.provider.owner, offer=offer,
+                                message=f'La administración retiró la oferta #{offer.pk}. Motivo: {reason.strip()}'[:300])
+    return offer

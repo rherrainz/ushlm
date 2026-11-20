@@ -4,7 +4,7 @@
 
 **Informe:** Implementación y evaluación final — Taller de Proyectos II.
 
-**Aplicación:** https://ushlm-rherrainzs-projects.vercel.app/ · **Entrega final:** 20/11/2026.
+**Aplicación:** https://ushlm.vercel.app/ · **Entrega final:** 20/11/2026.
 
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
@@ -15,16 +15,16 @@ Aplicación académica que conecta turistas con prestadores habilitados de Ushua
 | Materia | Taller de Proyectos II |
 | Carrera | Tecnicatura Universitaria en Tecnología de la Información |
 | Institución | Universidad Kennedy |
-| Fecha de entrega | 13/11/2026 |
+| Fecha de entrega final | 20/11/2026 |
 | Modalidad | Individual |
-| Fecha de corte | 12/11/2026, America/Argentina/Ushuaia |
+| Fecha de revisión final | 20/11/2026, America/Argentina/Ushuaia |
 | Integrante | Rodrigo Herrainz |
 | Legajo | 237834 |
 | Correo | rherrainz@alumnos.kennedy.edu.ar |
 | Repositorio | https://github.com/rherrainz/ushlm |
 
 
-Dominio propuesto: `ush-lm.ar`. Alternativas previstas: `ushlastminute.ar` y `ushlm.ar`. No se configuraron dominios ni despliegues.
+Dominio propuesto: `ush-lm.ar`. Alternativas previstas: `ushlastminute.ar` y `ushlm.ar`. La aplicación está publicada en Vercel; los dominios propios continúan como propuesta y no son necesarios para acceder a la entrega.
 
 ## 2. Problema, solución y alcance
 
@@ -61,7 +61,7 @@ Monolito Django con plantillas, CSS y JavaScript puntual. SQLite para desarrollo
 | SQLite local | 3.54.0 |
 | psycopg / psycopg-binary | 3.3.9 |
 | asgiref / sqlparse | 3.13.0 / 0.6.1 |
-| PostgreSQL | Configurable; no ejecutado |
+| PostgreSQL | Neon, entorno desplegado y base aislada de evaluación |
 
 Dependencias fijadas en [requirements.txt](requirements.txt). Las versiones provienen del entorno utilizado. Node.js es opcional para ejecutar las tres pruebas del cálculo de vista previa; no es una dependencia de ejecución de la aplicación.
 
@@ -81,9 +81,14 @@ erDiagram
     OFFER ||--o{ BOOKING : recibe
     BOOKING ||--|{ BOOKING_HISTORY : registra
     USER o|--o{ BOOKING_HISTORY : actor
+    OFFER ||--o{ OFFER_MODERATION : modera
+    USER ||--o{ OFFER_MODERATION : actor
+    USER ||--o{ NOTIFICATION : recibe
+    OFFER ||--o{ NOTIFICATION : informa
+    BOOKING o|--o{ NOTIFICATION : origina
 ```
 
-`User` es el modelo de autenticación de Django. El actor del historial puede ser nulo para eventos automáticos. Las relaciones de negocio usan `PROTECT` para evitar borrados en cascada. Las capturas de la interfaz están pendientes de incorporación.
+`User` es el modelo de autenticación de Django. El actor del historial puede ser nulo para eventos automáticos. Las relaciones de negocio usan `PROTECT` para evitar borrados en cascada. Las capturas de evaluación están en [evidencias](evidencias/).
 
 ## 4. Instalación y ejecución
 
@@ -111,7 +116,7 @@ Programar periódicamente el vencimiento; no se instala una tarea del sistema au
 python manage.py expire_pending
 ```
 
-**PostgreSQL: pendiente hasta preparar producción.** Para verificarlo, crear una base local y un usuario con permiso para crear la base de pruebas. Configurar el entorno y ejecutar:
+**PostgreSQL: verificado en Neon.** Para repetir la evaluación en otro entorno, crear una base local y un usuario con permiso para crear la base de pruebas. Configurar el entorno y ejecutar:
 
 ```sh
 export DATABASE_ENGINE=postgresql
@@ -147,7 +152,7 @@ Esperar que la base esté lista. Las pruebas crean y destruyen `test_ushlm`; no 
 10. Como `admin_demo`, administrar categorías y prestadores. Suspender un prestador: sus ofertas desaparecen y no se confirman pendientes. Restaurar habilitación para continuar.
 11. Crear una oferta con vencimiento cercano, enviar una pendiente y esperar. Ejecutar `expire_pending` y consultar estado e historial automático. Registrar otro turista: no ve solicitudes ajenas; otro prestador no accede a ofertas del primero.
 
-Son operaciones conectadas a la base, con pruebas HTTP. Las correcciones de esta revisión no tienen validación visual ni de concurrencia PostgreSQL ejecutadas. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
+Son operaciones conectadas a la base, con pruebas HTTP. La concurrencia PostgreSQL y el recorrido de navegador se verificaron el 20/11/2026; ver el apartado 10 y el cierre del apartado 11. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
 
 ## 6. Estado y porcentaje de avance (corte histórico)
 
@@ -172,14 +177,14 @@ Las pruebas SQLite acreditan comportamiento secuencial, incluida la detección d
 
 **Ciclo de vida:** requisitos, arquitectura inicial, implementación, revisión de defectos y pruebas unitarias/integradas realizadas. Pendientes: validación visual de las correcciones, concurrencia y entrega académica. El avance del ciclo de vida se describe por etapas y se evalúa por separado del porcentaje funcional.
 
-## 7. Pruebas y mantenimiento
+## 7. Pruebas y mantenimiento (registro de la revisión inicial)
 
 ```sh
 source .venv/bin/activate
 python manage.py check
 python manage.py makemigrations --check --dry-run
 python manage.py test --verbosity 2
-node --test market/booking_preview.test.mjs
+node --test market/*.test.mjs
 git diff --check
 ```
 
@@ -194,9 +199,9 @@ La suite original mantiene precios/fechas/cantidades inválidos, ofertas excluid
 - Orden predeterminado por porcentaje, desempate por vencimiento, orden alternativo y selector aplicado.
 - `19.99 × 3 = 59.97`, vista previa del servidor sin crear solicitud, cantidades inválidas, precio/moneda/total manipulados, firma ausente/alterada y precio/condiciones modificados desde la apertura del formulario. Revisión y reenvío con la copia histórica actualizada.
 
-**Concurrencia PostgreSQL no verificada.** La verificación se realizó con SQLite; no se dispuso de un servidor PostgreSQL activo. Las cuatro pruebas con dos conexiones, barrera e hilos comprueban último cupo, doble aceptación, doble devolución y ajustes simultáneos basados en una versión. Están escritas, pero omitidas en SQLite: ejecutarlas en PostgreSQL antes de producción y registrar resultados.
+**Estado histórico, superado por la evaluación del apartado 10: concurrencia PostgreSQL no verificada en ese corte.** La verificación se realizó con SQLite; no se dispuso de un servidor PostgreSQL activo. Las cuatro pruebas con dos conexiones, barrera e hilos comprueban último cupo, doble aceptación, doble devolución y ajustes simultáneos basados en una versión. Están escritas, pero omitidas en SQLite: ejecutarlas en PostgreSQL antes de producción y registrar resultados.
 
-**Verificación visual de las correcciones pendiente.** La suite HTTP y las pruebas JavaScript no sustituyen el recorrido en un navegador. Falta recorrer la guía de demostración a 390 y 1280 px, navegar con teclado y revisar errores, conflictos de inventario, total, contador y ausencia de desbordes. No se cuenta con capturas ni resultados visuales documentados de esta versión.
+**Estado histórico de esa revisión: verificación visual pendiente.** La suite HTTP y las pruebas JavaScript no sustituyen el recorrido en un navegador. Falta recorrer la guía de demostración a 390 y 1280 px, navegar con teclado y revisar errores, conflictos de inventario, total, contador y ausencia de desbordes. No se cuenta con capturas ni resultados visuales documentados de esta versión.
 
 Incidencias corregidas:
 
@@ -214,16 +219,16 @@ La carga de inventario externo sigue siendo manual: una versión válida impide 
 | 2 | Administración, cuentas y catálogo | Realizada |
 | 3 | Solicitudes históricas y operaciones de prestador | Realizada |
 | 4 | Vencimientos, cancelaciones y regresiones de esta revisión | Realizada; suite SQLite aprobada |
-| 5 | Verificar cambios en navegador, teléfono y teclado | Pendiente de ejecución |
-| 6 | Ejecutar suite PostgreSQL | Pendiente hasta preparar producción; requiere base de pruebas |
-| 7 | Datos de entrega: Universidad Kennedy, modalidad individual, 13/11/2026 | Completados |
-| 8 | Revisar criterios de entrega | Pendiente académico |
+| 5 | Verificar cambios en navegador, teléfono y teclado | Recorrido ejecutado en IAB; segunda familia de navegador pendiente |
+| 6 | Ejecutar suite PostgreSQL | Ejecutada en base aislada de Neon; ver resultados finales |
+| 7 | Datos de entrega final: Universidad Kennedy, modalidad individual, 20/11/2026 | Completados |
+| 8 | Revisar criterios de entrega | Matriz de cierre en apartado 11; aceptación con participantes pendiente |
 
-Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega el 13/11/2026. La implementación y su evolución se documentan mediante el código, las pruebas, las incidencias corregidas y el historial de Git.
+Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega final el 20/11/2026. La implementación y su evolución se documentan mediante el código, las pruebas, las incidencias corregidas y el historial de Git.
 
 ## 9. Limitaciones y referencias
 
-Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación cuenta ahora con preparación para Vercel y Neon (apartado 10); el despliegue y la evaluación remota siguen pendientes. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
+Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación está desplegada en Vercel con Neon y su evaluación remota se registra en el apartado 10. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
 
@@ -258,7 +263,7 @@ python manage.py check
 
 Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
 
-6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: https://ushlm-rherrainzs-projects.vercel.app/** y **fecha de implementación: 20/11/2026** únicamente después de comprobarlos.
+6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. **URL pública comprobada: https://ushlm.vercel.app/**. **Fecha de implementación: 20/11/2026**.
 
 ### Pruebas antes de la puesta en marcha
 
@@ -293,3 +298,50 @@ Documentación técnica de despliegue consultada el 20/11/2026: [Django en Verce
 - Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
 
 Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. La migración y la carga de datos de demostración del sitio también finalizaron correctamente.
+
+
+## 11. Cierre del alcance original y aceptación
+
+La tabla de 80 % del apartado 6 pertenece al avance del 12/11. No describe el estado actual. La revisión final contrasta también los requisitos de los módulos 1 y 2, para no confundir código desplegado con aceptación completa.
+
+### Funciones completadas en la revisión final
+
+- **RF-11, moderación:** la administración retira una oferta mediante una operación con motivo obligatorio, actor, fecha, estado anterior y estado nuevo. El evento se conserva en `OfferModeration`; el prestador recibe un aviso. La oferta retirada no puede republicarse y las solicitudes existentes se conservan. La edición administrativa general exige usar esa operación al cerrar una publicación.
+- **RF-12, avisos:** nuevas solicitudes y cambios de estado generan avisos persistentes para la otra parte. Cada usuario consulta únicamente los propios y puede marcarlos como leídos mediante POST con CSRF. Un reenvío idempotente no duplica avisos. No son correos ni notificaciones push.
+- **Diseño de publicación:** vista previa de los datos, descuento, fechas y condiciones sin guardar. Confirmar vuelve a validar en el servidor. El ajuste de cupo sigue separado para proteger la concurrencia.
+- **Diseño del catálogo:** orden por precio exclusivamente dentro de ARS o USD, conservando el orden predeterminado por descuento. Paginación de 24 ofertas y conservación de filtros al cambiar página. Índices para estado/vencimiento e inicio.
+- **Vencimiento en pantalla:** el contador deshabilita el envío cuando vence una oferta abierta. La validación del servidor continúa siendo la autoridad.
+- **Recuperación:** comando `backup_project` con archivo nuevo de permisos 0600, instantánea consistente y precisión completa de fechas; procedimiento de restauración en una base aislada. Copias y credenciales excluidas de Git.
+
+Las ilustraciones CSS locales se conservan como decisión visual de la demostración académica; no se presentan como fotografías de servicios reales. Pagos, correo, inventario externo, reseñas, guías y expansión territorial continúan fuera del alcance funcional acordado.
+
+### Resultados de esta revisión
+
+- Suite local: **66 pruebas Django**, 62 aprobadas y cuatro omitidas por requerir PostgreSQL; **cinco pruebas JavaScript aprobadas**. Las omisiones locales no acreditan concurrencia.
+- `check`, migraciones sincronizadas y `git diff --check` sin incidencias.
+- Navegador local aislado: solicitud de dos unidades enviada mediante teclado; aviso al prestador recibido y marcado como leído; vista previa de publicación revisada sin guardar. [Avisos](evidencias/avisos.jpg) y [vista previa](evidencias/vista-previa.jpg).
+- Recuperación lógica local: comparación íntegra de usuarios, prestador, categorías, ofertas, solicitud, historial y aviso en otra base, con fechas completas y permisos de copia 0600. [Registro](evidencias/recuperacion.json). Una primera comprobación detectó la pérdida de microsegundos del serializador JSON estándar; se corrigió con un serializador de respaldo preciso y se repitió satisfactoriamente.
+- PostgreSQL, suite de la revisión: **63 pruebas aprobadas sin omisiones**, incluidas las cuatro concurrentes, en 744,397 s; base de pruebas eliminada al finalizar.
+- PostgreSQL, últimos cambios: **10 pruebas aprobadas sin omisiones** en una base aislada (124,211 s). La unión de ambas corridas cubre los 66 casos actuales; siete casos se repiten entre las corridas.
+- Recuperación en PostgreSQL Neon: respaldo y restauración en otra base en 321,580 s; 500 ofertas ficticias, usuario, prestador y categoría conservados con igualdad de todos los campos. Esta muestra no contenía reservas; el ensayo local complementario sí incluyó solicitud e historial. [Registro PostgreSQL](evidencias/recuperacion-postgresql.json).
+- Rendimiento y método reproducible: [procedimiento](docs/rendimiento.md), [script](scripts/benchmark_catalog.py) y [resultados](evidencias/rendimiento.json).
+
+### Matriz de aceptación
+
+| Requisitos del módulo 1 | Evidencia / estado |
+|---|---|
+| RF-01 a RF-10: cuentas, prestadores, publicaciones, catálogo, detalle, solicitudes, respuesta, estados, vencimientos y cancelaciones | Implementados; suites del circuito y regresiones; recorrido de solicitud y confirmación en Vercel. |
+| RF-11: moderación con motivo y trazabilidad | Implementado con pruebas de permisos, motivo obligatorio, bloqueo de republicación y preservación de solicitudes. |
+| RF-12: avisos y lectura | Implementado; pruebas de privacidad, idempotencia, POST/CSRF y lectura; [captura](evidencias/avisos.jpg). |
+| RNF-01: 500 ofertas, 20 usuarios, p95 < 3 s | Prueba con 100 consultas: p95 **2,27 s**, sin errores. Servidor local con PostgreSQL Neon, no carga sobre producción. [Resultados](evidencias/rendimiento.json). |
+| RNF-02: adaptación a 360 y 1366 px en dos navegadores | Revisados catálogo, login/solicitud y avisos a 360 px; avisos y vista previa a 1366 px en IAB. Falta la segunda familia de navegador y completar toda la matriz de pantallas en ambos anchos. |
+| RNF-03: cuatro de cinco participantes, sin ayuda, en menos de cinco minutos | Pendiente con personas reales; [protocolo y planilla](docs/aceptacion-final.md). |
+| RNF-04: HTTPS, contraseñas protegidas y aislamiento | HTTPS en Vercel, autenticación Django y pruebas de acceso entre propietarios. |
+| RNF-05: integridad concurrente | Cuatro pruebas de concurrencia PostgreSQL y validaciones transaccionales. |
+| RNF-06: respaldo diario y restauración | Comando y ensayos de recuperación local y PostgreSQL aprobados; programación diaria en almacenamiento privado pendiente, acordada como próximo paso. [Procedimiento](docs/recuperacion.md). |
+| RNF-07: versionado, instrucciones y preparación por otra persona | Código, migraciones, instrucciones y pruebas disponibles. Falta acreditar la instalación independiente por otra persona. |
+| RNF-08: teclado, etiquetas, foco y estados textuales | Login y envío de solicitud operados mediante teclado en el navegador; CSS con foco visible y estados textuales. Falta completar el recorrido de todos los controles previstos. |
+
+El usuario confirmó que todavía no se ejecutó la prueba con cinco participantes y pidió preparar el protocolo. También acordó configurar el almacenamiento del respaldo diario como siguiente paso. Esas actividades no se registran como aprobadas ni se eliminan del alcance para elevar el porcentaje.
+
+**Estado de cierre:** funcionalidades principales implementadas; aceptación integral abierta. No se declara el 100 % de todos los requisitos originales hasta completar y registrar las verificaciones pendientes. La demostración con datos ficticios tampoco acredita por sí sola un piloto con prestadores reales.

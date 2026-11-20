@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-20",
+  "source": "isolated SQLite browser evaluation database",
+  "destination": "new isolated SQLite database",
+  "seconds": 0.3370085000005929,
+  "file_permissions": "0o600",
+  "checks": {
+    "auth.User": {
+      "source_rows": 3,
+      "restored_rows": 3,
+      "all_fields_equal": true
+    },
+    "market.Provider": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Category": {
+      "source_rows": 3,
+      "restored_rows": 3,
+      "all_fields_equal": true
+    },
+    "market.Offer": {
+      "source_rows": 3,
+      "restored_rows": 3,
+      "all_fields_equal": true
+    },
+    "market.Booking": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.BookingHistory": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Notification": {
+      "source_rows": 1,
+      "restored_rows": 1,
+      "all_fields_equal": true
+    },
+    "market.OfferModeration": {
+      "source_rows": 0,
+      "restored_rows": 0,
+      "all_fields_equal": true
+    }
+  },
+  "passed": true,
+  "scope": "Logical backup and full field comparison. Does not certify daily production backup scheduling or PostgreSQL disaster recovery."
+}

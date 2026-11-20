@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-20",
+  "sqlite": {
+    "tests": 66,
+    "passed": 62,
+    "skipped_postgresql_concurrency": 4,
+    "seconds": 29.793
+  },
+  "javascript": {
+    "tests": 5,
+    "passed": 5
+  },
+  "postgresql_full_revision": {
+    "tests": 63,
+    "passed": 63,
+    "skipped": 0,
+    "seconds": 744.397
+  },
+  "postgresql_final_scope": {
+    "tests": 10,
+    "passed": 10,
+    "skipped": 0,
+    "seconds": 124.211
+  },
+  "postgresql_distinct_cases_verified": 66,
+  "overlap_between_postgresql_runs": 7,
+  "database_isolation": "Separate evaluation/test databases; removed after successful runs."
+}

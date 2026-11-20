@@ -24,7 +24,7 @@ class Category(models.Model):
 class OfferQuerySet(models.QuerySet):
     def available(self):
         now = timezone.now()
-        return self.filter(status='published', provider__enabled=True, provider__owner__is_active=True, expires_at__gt=now, starts_at__gt=now, stock__gt=0)
+        return self.filter(status='published', moderated=False, provider__enabled=True, provider__owner__is_active=True, expires_at__gt=now, starts_at__gt=now, stock__gt=0)
 
 class Offer(models.Model):
     class Status(models.TextChoices):
@@ -47,9 +47,11 @@ class Offer(models.Model):
     stock = models.PositiveIntegerField('cupo disponible', default=0)
     stock_version = models.PositiveBigIntegerField('versión del inventario', default=0, editable=False)
     conditions = models.TextField('condiciones')
+    moderated = models.BooleanField('retirada por administración', default=False, editable=False)
     status = models.CharField('estado', max_length=12, choices=Status.choices, default=Status.DRAFT)
     objects = OfferQuerySet.as_manager()
     class Meta:
+        indexes = [models.Index(fields=['status', 'expires_at'], name='offer_live_idx'), models.Index(fields=['starts_at'], name='offer_start_idx')]
         constraints = [models.CheckConstraint(condition=Q(price__gt=0) & Q(reference_price__gt=F('price')), name='valid_offer_prices'), models.CheckConstraint(condition=Q(stock__gte=0), name='nonnegative_stock'), models.CheckConstraint(condition=Q(ends_at__gt=F('starts_at')) & Q(expires_at__lte=F('starts_at')), name='valid_offer_dates')]
     def clean(self):
         errors = {}
@@ -62,6 +64,8 @@ class Offer(models.Model):
             errors['expires_at'] = 'El vencimiento no puede superar el inicio.'
         # Validate every published save, including republication and edits.
         if self.status == self.Status.PUBLISHED:
+            if self.moderated:
+                errors['status'] = 'Esta oferta fue retirada por administración. Creá una nueva publicación con las correcciones.'
             if not self.provider_id or not self.provider.enabled or not self.provider.owner.is_active:
                 errors['status'] = 'Solo prestadores habilitados y activos pueden publicar.'
             if self.starts_at and not now < self.starts_at <= now + timedelta(hours=72):
@@ -115,3 +119,24 @@ class BookingHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering = ['created_at', 'pk']
+
+class OfferModeration(models.Model):
+    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name='moderations')
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    reason = models.TextField('motivo')
+    previous = models.CharField(max_length=12)
+    current = models.CharField(max_length=12, default=Offer.Status.CLOSED)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['-created_at', '-pk']
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='notifications')
+    booking = models.ForeignKey(Booking, null=True, blank=True, on_delete=models.PROTECT)
+    offer = models.ForeignKey(Offer, on_delete=models.PROTECT)
+    message = models.CharField(max_length=300)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    class Meta:
+        ordering = ['-created_at', '-pk']
+        indexes = [models.Index(fields=['recipient', 'read_at'], name='notification_unread_idx')]
