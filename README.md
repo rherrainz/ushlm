@@ -221,7 +221,7 @@ Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega e
 
 ## 9. Limitaciones y referencias
 
-Pendientes reales: revisión visual de las correcciones, concurrencia en PostgreSQL y revisión de textos/condiciones comerciales. La aplicación cuenta ahora con preparación para Vercel y Neon (apartado 10); el despliegue y la evaluación remota siguen pendientes. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
+Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación cuenta ahora con preparación para Vercel y Neon (apartado 10); el despliegue y la evaluación remota siguen pendientes. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
 
@@ -274,11 +274,11 @@ Las pruebas de PostgreSQL deben apuntar a una base de evaluación con permiso de
 | Evidencia de evaluación final | Resultado |
 |---|---|
 | Pruebas locales y configuración | 20/11/2026: 56 pruebas Django, 52 aprobadas y 4 omitidas por PostgreSQL; 3 pruebas JavaScript aprobadas; migraciones sincronizadas y 130 estáticos recopilados. |
-| PostgreSQL concurrente en GitHub Actions | Pendiente de publicación y ejecución del workflow. |
-| Recorrido en URL Vercel y adaptación móvil | Pendiente del despliegue. |
-| Registro de incidentes y correcciones remotas | Completar si se detectan problemas durante la evaluación. |
+| PostgreSQL real en Neon (base de evaluación separada) | 20/11/2026: 56 pruebas aprobadas, sin omisiones, en 639,271 s. Incluye las 4 de concurrencia. La base de pruebas y la base auxiliar se eliminaron al finalizar. |
+| Recorrido en URL Vercel y adaptación móvil | Aprobado el circuito de login, total, solicitud, confirmación, descuento de cupo e historial; catálogo a 390 px sin desbordes. |
+| Registro de incidentes y correcciones remotas | Error inicial de tablas ausentes resuelto con migraciones; formato de hora del contador fijado a 24 h; función ubicada junto a Neon. |
 
-Documentación técnica de despliegue consultada el 20/11/2026: [Django en Vercel](https://vercel.com/docs/frameworks/full-stack/django). No se declara el proyecto evaluado en producción mientras estas comprobaciones remotas estén pendientes.
+Documentación técnica de despliegue consultada el 20/11/2026: [Django en Vercel](https://vercel.com/docs/frameworks/full-stack/django). La suite en PostgreSQL real y el recorrido descrito fueron ejecutados; la automatización de GitHub Actions se configura adicionalmente y no se presenta como una ejecución observada.
 
 ### Registro de evaluación del entorno desplegado
 
@@ -289,3 +289,5 @@ Documentación técnica de despliegue consultada el 20/11/2026: [Django en Verce
 - Durante la puesta en marcha se registraron errores iniciales por tablas todavía no migradas. Se aplicaron las migraciones y después se verificaron catálogo, login y solicitud correctamente.
 - Se fijó la región de la función en `iad1`, junto a Neon, y el contador usa formato de 24 horas para evitar ambigüedad en el vencimiento.
 - Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
+
+Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. El paso posterior del script auxiliar de pruebas tuvo un error de ruta de importación; la migración y semilla del sitio se ejecutaron correctamente mediante un proceso independiente.
