@@ -2,7 +2,7 @@
 
 ## 1. Presentación
 
-**Informe:** Avance de implementación y demostración funcional — Taller de Proyectos II.
+**Informe:** Implementación y evaluación final — Taller de Proyectos II.
 
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
@@ -147,7 +147,7 @@ Esperar que la base esté lista. Las pruebas crean y destruyen `test_ushlm`; no 
 
 Son operaciones conectadas a la base, con pruebas HTTP. Las correcciones de esta revisión no tienen validación visual ni de concurrencia PostgreSQL ejecutadas. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
 
-## 6. Estado y porcentaje de avance
+## 6. Estado y porcentaje de avance (corte histórico)
 
 **Corte: 12/11/2026. Avance funcional con evidencia: 80/100 (80 %).** Estimación del alcance y su verificación; no es cobertura de líneas ni certificación de producción.
 
@@ -225,9 +225,9 @@ Pendientes reales: revisión visual de las correcciones, concurrencia en Postgre
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
 
-## 10. Implementación final: Vercel + Neon
+## 10. Implementación y evaluación final: Vercel + Neon
 
-Preparación del despliegue: 20/11/2026. Esta sección documenta la configuración entregada y la evaluación pendiente del entorno remoto; no acredita un despliegue ya realizado ni cambia el avance histórico del apartado 6.
+Implementación final: 20/11/2026. Proyecto Vercel `rherrainzs-projects/ushlm`, vinculado a este repositorio, con Django y base Neon gratuita en `iad1`. La tabla del apartado 6 conserva el corte histórico de avance; la evaluación final se registra al final de este apartado.
 
 ### Conectar desde GitHub
 
@@ -256,7 +256,7 @@ python manage.py check
 
 Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
 
-6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: [PENDIENTE]** y **fecha de implementación: [PENDIENTE]** únicamente después de comprobarlos.
+6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. Completar aquí **URL pública: [PENDIENTE]** y **fecha de implementación: 20/11/2026** únicamente después de comprobarlos.
 
 ### Pruebas antes de la puesta en marcha
 
@@ -279,3 +279,13 @@ Las pruebas de PostgreSQL deben apuntar a una base de evaluación con permiso de
 | Registro de incidentes y correcciones remotas | Completar si se detectan problemas durante la evaluación. |
 
 Documentación técnica de despliegue consultada el 20/11/2026: [Django en Vercel](https://vercel.com/docs/frameworks/full-stack/django). No se declara el proyecto evaluado en producción mientras estas comprobaciones remotas estén pendientes.
+
+### Registro de evaluación del entorno desplegado
+
+- Migraciones de Django aplicadas en Neon; tres categorías y ofertas ficticias creadas. La contraseña aleatoria de las cuentas demo se conserva únicamente en un archivo local excluido de Git y no se publica en este README.
+- Recorrido real en navegador: login como turista, detalle de oferta, total previo de dos unidades (ARS 118.000), envío pendiente y acceso con prestador. La solicitud ficticia #1 fue confirmada con autorización; el cupo bajó de 4 a 2 y el historial registró la transición. Se cerró la sesión del prestador al terminar.
+- Catálogo revisado a 390 px, sin desbordamiento horizontal. Esto es una comprobación móvil acotada, no una auditoría completa de accesibilidad ni una prueba en todos los dispositivos.
+- Evidencia del circuito: [confirmación y cupo](evidencias/confirmacion-demo.jpg). Evidencia móvil: [catálogo](evidencias/catalogo-movil.jpg).
+- Durante la puesta en marcha se registraron errores iniciales por tablas todavía no migradas. Se aplicaron las migraciones y después se verificaron catálogo, login y solicitud correctamente.
+- Se fijó la región de la función en `iad1`, junto a Neon, y el contador usa formato de 24 horas para evitar ambigüedad en el vencimiento.
+- Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
