@@ -1,3 +1,9 @@
+import logging
+import secrets
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.cache import never_cache
+from .daily_backup import run_daily_backup
 import uuid
 from datetime import date
 from django.contrib import messages
@@ -9,7 +15,7 @@ from django.db import transaction
 from django.db.models import DecimalField, ExpressionWrapper, F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from .forms import BookingForm, InventoryForm, OfferForm, SignupForm
 from .models import Booking, Category, Offer, Provider, Notification
 from .services import (OfferChanged, adjust_inventory, expire_pending, offer_quote,
@@ -186,3 +192,21 @@ def read_notification(request, pk):
     item = get_object_or_404(Notification, pk=pk, recipient=request.user)
     Notification.objects.filter(pk=item.pk, read_at__isnull=True).update(read_at=timezone.now())
     return redirect('notifications')
+
+
+@require_GET
+@never_cache
+def daily_backup(request):
+    secret = settings.CRON_SECRET
+    expected = f'Bearer {secret}'
+    provided = request.headers.get('Authorization', '')
+    if not secret or not secrets.compare_digest(provided.encode(), expected.encode()):
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    if not settings.DAILY_BACKUP_ENABLED or settings.VERCEL_ENVIRONMENT != 'production':
+        return JsonResponse({'error': 'Backups disabled'}, status=503)
+    try:
+        return JsonResponse(run_daily_backup())
+    except Exception as exc:
+        # Do not log exception messages/tracebacks containing credentials or rows.
+        logging.getLogger(__name__).error('Daily backup failed: %s', type(exc).__name__)
+        return JsonResponse({'error': 'Backup failed; check private operational logs.'}, status=503)

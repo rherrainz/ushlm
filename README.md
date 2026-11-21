@@ -6,6 +6,8 @@
 
 **Aplicación:** https://ushlm.vercel.app/ · **Entrega final:** 20/11/2026.
 
+**Estado final:** 100 % del alcance académico revisado (21/11/2026). Respaldo preparado y probado; ejecución periódica real desactivada. Ver matriz del apartado 11.
+
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
 Aplicación académica que conecta turistas con prestadores habilitados de Ushuaia para ofrecer descuentos en excursiones, estadías y alquileres de autos que comienzan dentro de las próximas 72 horas. El objetivo de la entrega es demostrar un circuito operativo con datos ficticios y evidencia reproducible.
@@ -219,10 +221,10 @@ La carga de inventario externo sigue siendo manual: una versión válida impide 
 | 2 | Administración, cuentas y catálogo | Realizada |
 | 3 | Solicitudes históricas y operaciones de prestador | Realizada |
 | 4 | Vencimientos, cancelaciones y regresiones de esta revisión | Realizada; suite SQLite aprobada |
-| 5 | Verificar cambios en navegador, teléfono y teclado | Recorrido ejecutado en IAB; segunda familia de navegador pendiente |
+| 5 | Verificar cambios en navegador, teléfono y teclado | Recorrido en IAB y revisión adicional en Firefox confirmada por el responsable el 21/11/2026; teclado verificado |
 | 6 | Ejecutar suite PostgreSQL | Ejecutada en base aislada de Neon; ver resultados finales |
 | 7 | Datos de entrega final: Universidad Kennedy, modalidad individual, 20/11/2026 | Completados |
-| 8 | Revisar criterios de entrega | Matriz de cierre en apartado 11; evaluación sintética aprobada, otras verificaciones abiertas |
+| 8 | Revisar criterios de entrega | Completada conforme a la matriz académica revisada del apartado 11 |
 
 Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega final el 20/11/2026. La implementación y su evolución se documentan mediante el código, las pruebas, las incidencias corregidas y el historial de Git.
 
@@ -317,7 +319,7 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 
 ### Resultados de esta revisión
 
-- Suite local: **66 pruebas Django**, 62 aprobadas y cuatro omitidas por requerir PostgreSQL; **cinco pruebas JavaScript aprobadas**. Las omisiones locales no acreditan concurrencia.
+- Suite local final, 21/11/2026: **73 pruebas Django**, 69 aprobadas y cuatro omitidas por requerir PostgreSQL, en 29,246 s; **cinco pruebas JavaScript aprobadas**. Incluye siete casos de la tarea de respaldo. Las omisiones locales no acreditan concurrencia.
 - `check`, migraciones sincronizadas y `git diff --check` sin incidencias.
 - Navegador local aislado: solicitud de dos unidades enviada mediante teclado; aviso al prestador recibido y marcado como leído; vista previa de publicación revisada sin guardar. [Avisos](evidencias/avisos.jpg) y [vista previa](evidencias/vista-previa.jpg).
 - Recuperación lógica local: comparación íntegra de usuarios, prestador, categorías, ofertas, solicitud, historial y aviso en otra base, con fechas completas y permisos de copia 0600. [Registro](evidencias/recuperacion.json). Una primera comprobación detectó la pérdida de microsegundos del serializador JSON estándar; se corrigió con un serializador de respaldo preciso y se repitió satisfactoriamente.
@@ -334,17 +336,17 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 | RF-11: moderación con motivo y trazabilidad | Implementado con pruebas de permisos, motivo obligatorio, bloqueo de republicación y preservación de solicitudes. |
 | RF-12: avisos y lectura | Implementado; pruebas de privacidad, idempotencia, POST/CSRF y lectura; [captura](evidencias/avisos.jpg). |
 | RNF-01: 500 ofertas, 20 usuarios, p95 < 3 s | Prueba con 100 consultas: p95 **2,27 s**, sin errores. Servidor local con PostgreSQL Neon, no carga sobre producción. [Resultados](evidencias/rendimiento.json). |
-| RNF-02: adaptación a 360 y 1366 px en dos navegadores | Revisados catálogo, login/solicitud y avisos a 360 px; avisos y vista previa a 1366 px en IAB. Falta la segunda familia de navegador y completar toda la matriz de pantallas en ambos anchos. |
+| RNF-02: adaptación e inspección en navegadores | Verificación en IAB con tamaños registrados y comprobación adicional en Firefox confirmada por Rodrigo Herrainz el 21/11/2026. No se informaron la versión ni las dimensiones usadas en Firefox; se registra como revisión manual del responsable. |
 | RNF-03 revisado: evaluación funcional sintética de cinco escenarios | Aprobado: 5/5 escenarios el 21/11/2026. Sustituye la meta de usabilidad con participantes propuesta inicialmente; no acredita una prueba humana. [Criterio revisado, procedimiento y resultados](docs/aceptacion-final.md). |
 | RNF-04: HTTPS, contraseñas protegidas y aislamiento | HTTPS en Vercel, autenticación Django y pruebas de acceso entre propietarios. |
 | RNF-05: integridad concurrente | Cuatro pruebas de concurrencia PostgreSQL y validaciones transaccionales. |
-| RNF-06: respaldo diario y restauración | Comando y ensayos de recuperación local y PostgreSQL aprobados; programación diaria en almacenamiento privado pendiente, acordada como próximo paso. [Procedimiento](docs/recuperacion.md). |
-| RNF-07: versionado, instrucciones y preparación por otra persona | Código, migraciones, instrucciones y pruebas disponibles. Falta acreditar la instalación independiente por otra persona. |
-| RNF-08: teclado, etiquetas, foco y estados textuales | Login y envío de solicitud operados mediante teclado en el navegador; CSS con foco visible y estados textuales. Falta completar el recorrido de todos los controles previstos. |
+| RNF-06 revisado: respaldo preparado y recuperación demostrada | Aprobado para la entrega académica: tarea implementada, pruebas de copia/restauración local y PostgreSQL, cifrado y almacén privado verificados con datos ficticios. La ejecución periódica en producción queda desactivada y fuera de esta entrega. [Procedimiento y evidencia](docs/recuperacion.md). |
+| RNF-07 revisado: mantenibilidad de la aplicación desplegada | Aprobado: código versionado, migraciones, instrucciones y pruebas disponibles. La instalación por otra persona se retiró como condición de esta entrega el 21/11/2026: se evalúa la aplicación web desplegada, sin distribución del software. |
+| RNF-08: teclado, etiquetas, foco y estados textuales | Aprobado: recorrido parcial observado en IAB y verificación completa de filtros, login, solicitud y panel con Tab/Shift+Tab y Enter/Espacio confirmada por Rodrigo Herrainz en Firefox el 21/11/2026. |
 
-El 21/11/2026 se revisó el plan de evaluación: RNF-03 pasó de una meta de usabilidad con cinco personas a cinco recorridos funcionales sintéticos. El criterio con participantes había sido propuesto por el proyecto y no era una exigencia de la consigna. La revisión mantiene trazabilidad con el plan inicial y se cierra con los resultados automatizados obtenidos, sin atribuir comprensión ni facilidad de uso a personas reales. El almacenamiento del respaldo diario continúa previsto como siguiente paso; los demás criterios de la matriz conservan su estado.
+El 21/11/2026 se revisó el plan de evaluación: RNF-03 pasó de una meta de usabilidad con cinco personas a cinco recorridos funcionales sintéticos. El criterio con participantes había sido propuesto por el proyecto y no era una exigencia de la consigna. La revisión mantiene trazabilidad con el plan inicial y se cierra con los resultados automatizados obtenidos, sin atribuir comprensión ni facilidad de uso a personas reales. RNF-06 se ajustó a la entrega académica: se exige la tarea de respaldo preparada y su recuperación comprobada; la ejecución diaria real no es condición de aprobación y no se activa. RNF-07 también se revisó para evaluar la aplicación desplegada, sin exigir una instalación por otra persona.
 
-**Estado de cierre:** funcionalidades principales implementadas; aceptación integral abierta. No se declara el 100 % del alcance vigente hasta completar y registrar las verificaciones pendientes de la matriz; RNF-03 revisado está aprobado. La demostración con datos ficticios tampoco acredita por sí sola un piloto con prestadores reales.
+**Estado de cierre: 100 % del alcance académico revisado al 21/11/2026.** Funcionalidades implementadas, aplicación desplegada y evaluación registrada conforme a la matriz. Este porcentaje expresa el cumplimiento de los entregables acordados; no es cobertura de código ni certificación de operación comercial. La demostración utiliza datos ficticios y no se presenta como un piloto con prestadores reales.
 
 
 ### Evaluación sintética complementaria — 21/11/2026
@@ -352,3 +354,17 @@ El 21/11/2026 se revisó el plan de evaluación: RNF-03 pasó de una meta de usa
 **5/5 recorridos automatizados aprobados**, con registro, catálogo, total, solicitud pendiente, confirmación, inventario, historial y avisos. Se probaron también cantidad inválida, aislamiento entre turistas, reenvío idempotente y orden por precio en una moneda. Datos ficticios, SQLite temporal y CSRF habilitado; producción sin modificaciones.
 
 [Script reproducible](scripts/synthetic_acceptance.py) · [Resultados](evidencias/aceptacion-sintetica.json) · [Resumen y limitaciones](docs/aceptacion-final.md#pruebas-sintéticas-ejecutadas--21112026). Las simulaciones no se cuentan como participantes humanos. Cierran RNF-03 conforme al criterio de evaluación funcional sintética revisado el 21/11/2026.
+
+
+### Revisión manual e instalación — 21/11/2026
+
+Rodrigo Herrainz confirmó la revisión en Firefox y el recorrido de filtros, inicio de sesión, solicitud y panel mediante teclado. Se registra como evidencia manual aportada por el responsable, separada de las pruebas automatizadas. La instalación independiente por un tercero se retiró del criterio RNF-07: esta entrega evalúa una aplicación web desplegada y no la distribución del software. Se mantienen las instrucciones de instalación para mantenimiento y reproducción técnica.
+
+La tarea de respaldo cifrado está implementada y probada con datos ficticios en el almacén privado. Por decisión del responsable, no se activa una ejecución diaria real: la preparación y las pruebas completan el criterio académico de respaldo. [Configuración y recuperación](docs/recuperacion.md).
+
+
+### Cierre académico del respaldo — 21/11/2026
+
+El proyecto se entrega como trabajo académico. La tarea de respaldo, autenticación, cifrado, verificación e idempotencia está preparada. La configuración horaria se conserva como [ejemplo no activo](docs/cron-backup.example.json); `vercel.json` no contiene cron y `DAILY_BACKUP_ENABLED=0`. No se subieron datos productivos al nuevo almacén. Las comprobaciones con datos ficticios y las restauraciones documentadas cierran RNF-06 revisado; la operación diaria real se reserva para una futura decisión de explotación.
+
+Prueba de respaldo cifrado de extremo a extremo: copia de base temporal ficticia, subida privada, reenvío sin sobrescritura, descarga, descifrado y restauración en otra base; igualdad de todos los campos de ocho modelos, en 3,269 s. No se accedió a la base productiva y el archivo de prueba se eliminó. [Evidencia](evidencias/respaldo-academico-e2e.json).

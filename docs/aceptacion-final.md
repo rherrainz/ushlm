@@ -26,19 +26,19 @@ El 21/11/2026 se acordó sustituir el criterio inicial de usabilidad con cinco p
 
 Los resultados ejecutados y las variantes se detallan al final de este documento. Los tiempos de ejecución automática no representan tiempos de interacción humana. La comprensión, la facilidad de uso y la adaptación visual no se infieren de esta evaluación; las verificaciones de interfaz se registran por separado.
 
-## Verificaciones restantes de aceptación
+## Verificaciones complementarias de aceptación
 
 - RNF-01: medición realizada: 500 ofertas, 20 clientes, 100 consultas, p95 2,27 segundos y cero errores (ver `evidencias/rendimiento.json`). Para repetir, cargar 500 ofertas ficticias en una base aislada y simular 20 usuarios de consulta; registrar entorno, duración, cantidad de solicitudes, errores y percentil 95. Meta: p95 inferior a 3 segundos. No ejecutar carga sobre el sitio productivo sin evaluar su impacto.
-- RNF-02: comprobar catálogo, detalle y formularios a 360 y 1366 píxeles en dos navegadores actuales. El recorrido previo a 390 píxeles acredita solo una parte de esta meta.
-- RNF-06: ensayos lógicos local y PostgreSQL realizados (ver `evidencias/recuperacion.json` y `evidencias/recuperacion-postgresql.json`); configurar respaldo diario, sin publicar copias ni credenciales. Registrar proveedor, retención y fecha de la restauración.
-- RNF-07: pedir a otra persona preparar el entorno siguiendo el README, registrar dificultades y corregir las instrucciones.
-- RNF-08: recorrer con Tab, Shift+Tab, Enter y Espacio: filtros, login, solicitud y panel; comprobar foco visible, etiquetas y errores comprensibles.
+- RNF-02: revisión en IAB con tamaños documentados y revisión adicional en Firefox confirmada por Rodrigo Herrainz el 21/11/2026; la versión y dimensiones usadas en Firefox no fueron informadas. Evidencia manual del responsable.
+- RNF-06 revisado: tarea de respaldo preparada y pruebas de copia, cifrado y restauración realizadas con datos ficticios; ver `evidencias/recuperacion.json`, `evidencias/recuperacion-postgresql.json` y `evidencias/almacen-respaldo.json`. El responsable definió el 21/11/2026 que la ejecución diaria real no es necesaria para la entrega académica. Estado: aprobado; automatización productiva desactivada.
+- RNF-07 revisado: se evalúan versionado, instrucciones y pruebas de la aplicación desplegada. La instalación independiente por otra persona se retiró de esta entrega por decisión del responsable el 21/11/2026. Estado: aprobado.
+- RNF-08: recorrido completo de filtros, login, solicitud y panel con Tab/Shift+Tab y Enter/Espacio confirmado por Rodrigo Herrainz en Firefox el 21/11/2026, complementario al recorrido observado en IAB. Estado: aprobado.
 
 ## Diferencias de diseño que requieren cierre explícito
 
 El diseño del módulo 2 proponía fotografías, vista previa de publicación y orden por precio condicionado a moneda. La revisión final incorporó la vista previa y el orden por precio dentro de una moneda. Las ilustraciones CSS locales se conservan como decisión visual de la demostración y no se presentan como fotografías de servicios reales.
 
-El piloto con prestadores reales del módulo 1 tampoco se acredita con cuentas ficticias: la evaluación técnica actual es una demostración académica. Registrar entrevistas y validación si forman parte de la entrega acordada con la cátedra.
+La evaluación se delimita a la aplicación académica operativa con datos ficticios. No se afirma que se hayan realizado entrevistas ni un piloto comercial con prestadores reales; una eventual explotación se evaluará por separado.
 
 
 ## Pruebas sintéticas ejecutadas — 21/11/2026
@@ -58,3 +58,7 @@ En todos se verificaron registro e inicio de sesión, filtrado, detalle, total d
 **Resultado: cinco de cinco escenarios sintéticos aprobados. Participantes humanos: cero.** Esta evidencia acredita funcionamiento HTTP secuencial, no comprensión, facilidad de uso, adaptación visual ni la meta de cuatro de cinco personas en menos de cinco minutos. Los tiempos registrados corresponden a ejecución automática. RNF-03 queda aprobado conforme al criterio sintético revisado; la meta inicial con personas reales fue sustituida y ya no es un pendiente de este criterio.
 
 Repetir desde la raíz con `python scripts/synthetic_acceptance.py`. El script impone una base temporal local, prepara datos ficticios y genera [el registro JSON](../evidencias/aceptacion-sintetica.json). No requiere credenciales de producción. La concurrencia PostgreSQL y JavaScript conservan sus evidencias separadas.
+
+## Cierre del alcance académico
+
+Al 21/11/2026, la matriz del README registra el cumplimiento del alcance académico revisado: evaluación sintética, inspección en navegadores y teclado, código y documentación, y respaldo preparado y probado. La ejecución diaria de copias reales y la instalación independiente por un tercero no son condiciones de esta entrega. Se conservan las revisiones del plan para no confundir criterios originales con criterios finales.

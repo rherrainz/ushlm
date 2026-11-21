@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-21",
+  "store": "ushlm-backups",
+  "access": "private",
+  "test_data": "fictional category only; no production rows",
+  "encrypted_round_trip": true,
+  "anonymous_http_status": 403,
+  "test_file_removed": true
+}

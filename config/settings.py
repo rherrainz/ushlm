@@ -75,3 +75,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/cuenta/login/'
+
+# Private scheduled backups; enable only in Production after provisioning.
+DAILY_BACKUP_ENABLED = os.getenv('DAILY_BACKUP_ENABLED', '0') == '1'
+VERCEL_ENVIRONMENT = os.getenv('VERCEL_ENV', '')
+CRON_SECRET = os.getenv('CRON_SECRET', '')
+BACKUP_ENCRYPTION_KEY = os.getenv('BACKUP_ENCRYPTION_KEY', '')
+BLOB_STORE_ID = os.getenv('BLOB_STORE_ID', '')

@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-21",
+  "kind": "academic_backup_end_to_end",
+  "source": "temporary SQLite database with synthetic accounts, booking, history, notification and moderation",
+  "storage": "Vercel Blob private ushlm-backups; isolated verification prefix",
+  "encryption": "Fernet after gzip",
+  "first_upload_created": true,
+  "repeat_did_not_overwrite": true,
+  "checks": {
+    "auth.User": {
+      "rows": 4,
+      "all_fields_equal": true
+    },
+    "market.Provider": {
+      "rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Category": {
+      "rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Offer": {
+      "rows": 1,
+      "all_fields_equal": true
+    },
+    "market.Booking": {
+      "rows": 1,
+      "all_fields_equal": true
+    },
+    "market.BookingHistory": {
+      "rows": 2,
+      "all_fields_equal": true
+    },
+    "market.Notification": {
+      "rows": 3,
+      "all_fields_equal": true
+    },
+    "market.OfferModeration": {
+      "rows": 1,
+      "all_fields_equal": true
+    }
+  },
+  "seconds": 3.269,
+  "passed": true,
+  "production_database_accessed": false,
+  "production_schedule_activated": false,
+  "temporary_cloud_copy_deleted": true
+}

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from market import views
 urlpatterns = [
+    path('internal/cron/daily-backup/', views.daily_backup, name='daily_backup'),
     path('avisos/', views.notifications, name='notifications'),
     path('avisos/<int:pk>/leer/', views.read_notification, name='read_notification'),
     path('acerca-de/', views.about, name='about'),

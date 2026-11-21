@@ -24,5 +24,16 @@
   },
   "postgresql_distinct_cases_verified": 66,
   "overlap_between_postgresql_runs": 7,
-  "database_isolation": "Separate evaluation/test databases; removed after successful runs."
+  "database_isolation": "Separate evaluation/test databases; removed after successful runs.",
+  "academic_backup_revision_2026_11_21": {
+    "django_total": 73,
+    "passed_sqlite": 69,
+    "skipped_postgresql_only": 4,
+    "seconds": 29.246,
+    "javascript_passed": 5,
+    "backup_specific_cases_passed": 7,
+    "encrypted_private_storage_roundtrip_passed": true,
+    "restoration_all_fields_equal": true,
+    "production_schedule_activated": false
+  }
 }
