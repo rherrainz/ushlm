@@ -1,0 +1,67 @@
+{
+  "executed_at": "2026-11-21T12:15:06.306212+00:00",
+  "kind": "synthetic_http_acceptance",
+  "environment": "Django Client with CSRF enforcement, isolated temporary SQLite database",
+  "human_participants": 0,
+  "scenarios_passed": 5,
+  "scenarios_total": 5,
+  "results": [
+    {
+      "scenario": "S1",
+      "variant": "Recorrido principal",
+      "category": "tour",
+      "passed": true,
+      "http_execution_seconds": 0.261,
+      "total": "ARS 140.00",
+      "final_status": "confirmed",
+      "stock_decrement": 2
+    },
+    {
+      "scenario": "S2",
+      "variant": "Cantidad inválida y corrección",
+      "category": "stay",
+      "passed": true,
+      "http_execution_seconds": 0.221,
+      "total": "ARS 140.00",
+      "final_status": "confirmed",
+      "stock_decrement": 2
+    },
+    {
+      "scenario": "S3",
+      "variant": "Aislamiento entre turistas",
+      "category": "car",
+      "passed": true,
+      "http_execution_seconds": 0.224,
+      "total": "ARS 140.00",
+      "final_status": "confirmed",
+      "stock_decrement": 2
+    },
+    {
+      "scenario": "S4",
+      "variant": "Reenvío idempotente",
+      "category": "tour",
+      "passed": true,
+      "http_execution_seconds": 0.219,
+      "total": "ARS 140.00",
+      "final_status": "confirmed",
+      "stock_decrement": 2
+    },
+    {
+      "scenario": "S5",
+      "variant": "Orden por precio y moneda",
+      "category": "stay",
+      "passed": true,
+      "http_execution_seconds": 0.217,
+      "total": "ARS 140.00",
+      "final_status": "confirmed",
+      "stock_decrement": 2
+    }
+  ],
+  "limitations": [
+    "No human usability evaluation or five-minute task completion measurement.",
+    "No browser rendering, JavaScript, keyboard or multi-browser verification.",
+    "SQLite does not verify concurrent PostgreSQL locking; see separate PostgreSQL evidence.",
+    "Execution times measure automated HTTP operations, not human interaction time."
+  ],
+  "production_modified": false
+}

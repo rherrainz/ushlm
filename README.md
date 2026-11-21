@@ -335,7 +335,7 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 | RF-12: avisos y lectura | Implementado; pruebas de privacidad, idempotencia, POST/CSRF y lectura; [captura](evidencias/avisos.jpg). |
 | RNF-01: 500 ofertas, 20 usuarios, p95 < 3 s | Prueba con 100 consultas: p95 **2,27 s**, sin errores. Servidor local con PostgreSQL Neon, no carga sobre producción. [Resultados](evidencias/rendimiento.json). |
 | RNF-02: adaptación a 360 y 1366 px en dos navegadores | Revisados catálogo, login/solicitud y avisos a 360 px; avisos y vista previa a 1366 px en IAB. Falta la segunda familia de navegador y completar toda la matriz de pantallas en ambos anchos. |
-| RNF-03: cuatro de cinco participantes, sin ayuda, en menos de cinco minutos | Pendiente con personas reales; [protocolo y planilla](docs/aceptacion-final.md). |
+| RNF-03: cuatro de cinco participantes, sin ayuda, en menos de cinco minutos | Cinco escenarios HTTP sintéticos aprobados el 21/11/2026; no sustituyen la evaluación humana, aún pendiente. [Protocolo, planilla y resultados sintéticos](docs/aceptacion-final.md). |
 | RNF-04: HTTPS, contraseñas protegidas y aislamiento | HTTPS en Vercel, autenticación Django y pruebas de acceso entre propietarios. |
 | RNF-05: integridad concurrente | Cuatro pruebas de concurrencia PostgreSQL y validaciones transaccionales. |
 | RNF-06: respaldo diario y restauración | Comando y ensayos de recuperación local y PostgreSQL aprobados; programación diaria en almacenamiento privado pendiente, acordada como próximo paso. [Procedimiento](docs/recuperacion.md). |
@@ -345,3 +345,10 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 El usuario confirmó que todavía no se ejecutó la prueba con cinco participantes y pidió preparar el protocolo. También acordó configurar el almacenamiento del respaldo diario como siguiente paso. Esas actividades no se registran como aprobadas ni se eliminan del alcance para elevar el porcentaje.
 
 **Estado de cierre:** funcionalidades principales implementadas; aceptación integral abierta. No se declara el 100 % de todos los requisitos originales hasta completar y registrar las verificaciones pendientes. La demostración con datos ficticios tampoco acredita por sí sola un piloto con prestadores reales.
+
+
+### Evaluación sintética complementaria — 21/11/2026
+
+**5/5 recorridos automatizados aprobados**, con registro, catálogo, total, solicitud pendiente, confirmación, inventario, historial y avisos. Se probaron también cantidad inválida, aislamiento entre turistas, reenvío idempotente y orden por precio en una moneda. Datos ficticios, SQLite temporal y CSRF habilitado; producción sin modificaciones.
+
+[Script reproducible](scripts/synthetic_acceptance.py) · [Resultados](evidencias/aceptacion-sintetica.json) · [Resumen y limitaciones](docs/aceptacion-final.md#pruebas-sintéticas-ejecutadas--21112026). Las simulaciones no se cuentan como participantes humanos ni cierran RNF-03.

@@ -42,3 +42,22 @@ Fecha de ejecución: pendiente. Resultado: pendiente. No sustituir esta tabla po
 El diseño del módulo 2 proponía fotografías, vista previa de publicación y orden por precio condicionado a moneda. La revisión final incorporó la vista previa y el orden por precio dentro de una moneda. Las ilustraciones CSS locales se conservan como decisión visual de la demostración y no se presentan como fotografías de servicios reales.
 
 El piloto con prestadores reales del módulo 1 tampoco se acredita con cuentas ficticias: la evaluación técnica actual es una demostración académica. Registrar entrevistas y validación si forman parte de la entrega acordada con la cátedra.
+
+
+## Pruebas sintéticas ejecutadas — 21/11/2026
+
+Se ejecutaron cinco recorridos HTTP automatizados con cuentas ficticias y una base SQLite temporal, eliminada al finalizar. Se aplicó la protección CSRF real de Django. No se modificaron datos productivos.
+
+En todos se verificaron registro e inicio de sesión, filtrado, detalle, total de dos unidades (ARS 140,00), solicitud pendiente sin descuento de cupo, aviso al prestador, lectura del aviso, confirmación, descuento de dos unidades, historial y aviso al turista.
+
+| Escenario | Categoría | Variante adicional | Resultado |
+|---|---|---|---|
+| S1 | Excursión | Circuito principal completo | Aprobado |
+| S2 | Alojamiento | Cantidad cero rechazada; corrección y envío válido | Aprobado |
+| S3 | Auto | Intento de operar una solicitud ajena denegado; listado privado | Aprobado |
+| S4 | Excursión | Reenvío del formulario sin duplicar solicitud | Aprobado |
+| S5 | Alojamiento | Filtro de moneda y orden por precio | Aprobado |
+
+**Resultado: cinco de cinco escenarios sintéticos aprobados. Participantes humanos: cero.** Esta evidencia acredita funcionamiento HTTP secuencial, no comprensión, facilidad de uso, adaptación visual ni la meta de cuatro de cinco personas en menos de cinco minutos. Los tiempos registrados corresponden a ejecución automática. La prueba humana de RNF-03 sigue pendiente.
+
+Repetir desde la raíz con `python scripts/synthetic_acceptance.py`. El script impone una base temporal local, prepara datos ficticios y genera [el registro JSON](../evidencias/aceptacion-sintetica.json). No requiere credenciales de producción. La concurrencia PostgreSQL y JavaScript conservan sus evidencias separadas.
