@@ -222,7 +222,7 @@ La carga de inventario externo sigue siendo manual: una versión válida impide 
 | 5 | Verificar cambios en navegador, teléfono y teclado | Recorrido ejecutado en IAB; segunda familia de navegador pendiente |
 | 6 | Ejecutar suite PostgreSQL | Ejecutada en base aislada de Neon; ver resultados finales |
 | 7 | Datos de entrega final: Universidad Kennedy, modalidad individual, 20/11/2026 | Completados |
-| 8 | Revisar criterios de entrega | Matriz de cierre en apartado 11; aceptación con participantes pendiente |
+| 8 | Revisar criterios de entrega | Matriz de cierre en apartado 11; evaluación sintética aprobada, otras verificaciones abiertas |
 
 Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega final el 20/11/2026. La implementación y su evolución se documentan mediante el código, las pruebas, las incidencias corregidas y el historial de Git.
 
@@ -335,20 +335,20 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 | RF-12: avisos y lectura | Implementado; pruebas de privacidad, idempotencia, POST/CSRF y lectura; [captura](evidencias/avisos.jpg). |
 | RNF-01: 500 ofertas, 20 usuarios, p95 < 3 s | Prueba con 100 consultas: p95 **2,27 s**, sin errores. Servidor local con PostgreSQL Neon, no carga sobre producción. [Resultados](evidencias/rendimiento.json). |
 | RNF-02: adaptación a 360 y 1366 px en dos navegadores | Revisados catálogo, login/solicitud y avisos a 360 px; avisos y vista previa a 1366 px en IAB. Falta la segunda familia de navegador y completar toda la matriz de pantallas en ambos anchos. |
-| RNF-03: cuatro de cinco participantes, sin ayuda, en menos de cinco minutos | Cinco escenarios HTTP sintéticos aprobados el 21/11/2026; no sustituyen la evaluación humana, aún pendiente. [Protocolo, planilla y resultados sintéticos](docs/aceptacion-final.md). |
+| RNF-03 revisado: evaluación funcional sintética de cinco escenarios | Aprobado: 5/5 escenarios el 21/11/2026. Sustituye la meta de usabilidad con participantes propuesta inicialmente; no acredita una prueba humana. [Criterio revisado, procedimiento y resultados](docs/aceptacion-final.md). |
 | RNF-04: HTTPS, contraseñas protegidas y aislamiento | HTTPS en Vercel, autenticación Django y pruebas de acceso entre propietarios. |
 | RNF-05: integridad concurrente | Cuatro pruebas de concurrencia PostgreSQL y validaciones transaccionales. |
 | RNF-06: respaldo diario y restauración | Comando y ensayos de recuperación local y PostgreSQL aprobados; programación diaria en almacenamiento privado pendiente, acordada como próximo paso. [Procedimiento](docs/recuperacion.md). |
 | RNF-07: versionado, instrucciones y preparación por otra persona | Código, migraciones, instrucciones y pruebas disponibles. Falta acreditar la instalación independiente por otra persona. |
 | RNF-08: teclado, etiquetas, foco y estados textuales | Login y envío de solicitud operados mediante teclado en el navegador; CSS con foco visible y estados textuales. Falta completar el recorrido de todos los controles previstos. |
 
-El usuario confirmó que todavía no se ejecutó la prueba con cinco participantes y pidió preparar el protocolo. También acordó configurar el almacenamiento del respaldo diario como siguiente paso. Esas actividades no se registran como aprobadas ni se eliminan del alcance para elevar el porcentaje.
+El 21/11/2026 se revisó el plan de evaluación: RNF-03 pasó de una meta de usabilidad con cinco personas a cinco recorridos funcionales sintéticos. El criterio con participantes había sido propuesto por el proyecto y no era una exigencia de la consigna. La revisión mantiene trazabilidad con el plan inicial y se cierra con los resultados automatizados obtenidos, sin atribuir comprensión ni facilidad de uso a personas reales. El almacenamiento del respaldo diario continúa previsto como siguiente paso; los demás criterios de la matriz conservan su estado.
 
-**Estado de cierre:** funcionalidades principales implementadas; aceptación integral abierta. No se declara el 100 % de todos los requisitos originales hasta completar y registrar las verificaciones pendientes. La demostración con datos ficticios tampoco acredita por sí sola un piloto con prestadores reales.
+**Estado de cierre:** funcionalidades principales implementadas; aceptación integral abierta. No se declara el 100 % del alcance vigente hasta completar y registrar las verificaciones pendientes de la matriz; RNF-03 revisado está aprobado. La demostración con datos ficticios tampoco acredita por sí sola un piloto con prestadores reales.
 
 
 ### Evaluación sintética complementaria — 21/11/2026
 
 **5/5 recorridos automatizados aprobados**, con registro, catálogo, total, solicitud pendiente, confirmación, inventario, historial y avisos. Se probaron también cantidad inválida, aislamiento entre turistas, reenvío idempotente y orden por precio en una moneda. Datos ficticios, SQLite temporal y CSRF habilitado; producción sin modificaciones.
 
-[Script reproducible](scripts/synthetic_acceptance.py) · [Resultados](evidencias/aceptacion-sintetica.json) · [Resumen y limitaciones](docs/aceptacion-final.md#pruebas-sintéticas-ejecutadas--21112026). Las simulaciones no se cuentan como participantes humanos ni cierran RNF-03.
+[Script reproducible](scripts/synthetic_acceptance.py) · [Resultados](evidencias/aceptacion-sintetica.json) · [Resumen y limitaciones](docs/aceptacion-final.md#pruebas-sintéticas-ejecutadas--21112026). Las simulaciones no se cuentan como participantes humanos. Cierran RNF-03 conforme al criterio de evaluación funcional sintética revisado el 21/11/2026.

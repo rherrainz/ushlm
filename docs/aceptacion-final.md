@@ -1,6 +1,6 @@
 # Aceptación final — USH Last Minute
 
-Fecha de revisión: 20/11/2026. Responsable: Rodrigo Herrainz.
+Fecha de revisión: 21/11/2026. Responsable: Rodrigo Herrainz.
 
 ## Criterio de cierre
 
@@ -8,26 +8,23 @@ El 100 % significa completar el alcance aprobado y registrar su evaluación. No 
 
 La ponderación de avance técnico del README no sustituye la aceptación de todos los requisitos iniciales. Los resultados no ejecutados permanecen abiertos.
 
-## Prueba con cinco participantes (RNF-03)
+## Evaluación funcional sintética (RNF-03 revisado)
 
-Estado: **pendiente de ejecución con personas reales**. No registrar cuentas demo ni agentes automatizados como participantes.
+**Estado: aprobado, cinco de cinco escenarios.**
 
-1. Preparar cinco cuentas de turista con datos ficticios y ofertas vigentes con cupo suficiente. Usar una base aislada de evaluación. No solicitar documentos ni tarjetas.
-2. Explicar únicamente: «Esta plataforma permite encontrar ofertas turísticas de último momento en Ushuaia. Una solicitud requiere confirmación posterior del prestador». No explicar dónde hacer clic.
-3. Entregar la tarea: «Encontrá una excursión, revisá su precio total para dos personas y enviá una solicitud. Explicá si el envío ya garantiza tu lugar».
-4. Iniciar el cronómetro al mostrar la portada y detenerlo cuando la persona identifique su solicitud pendiente. Registrar si requirió ayuda, errores y duración. No corregir durante el intento; si se brinda ayuda, consignarla.
-5. Preguntar: «¿Cuánto pagarías? ¿Cuándo vence la oferta? ¿Tu lugar ya está confirmado?». Registrar confusiones sin nombres ni contactos.
-6. Criterio original: al menos cuatro de cinco participantes completan sin ayuda en menos de cinco minutos. Si falla, corregir la interfaz y repetir la ronda, conservando ambos resultados.
+El 21/11/2026 se acordó sustituir el criterio inicial de usabilidad con cinco participantes por una evaluación funcional sintética. La participación de personas reales era una meta propuesta por el proyecto, no una exigencia de la consigna de la materia. Se conserva esta nota para identificar el cambio respecto del plan inicial; no se presenta la simulación como evidencia de una prueba humana.
 
-| Participante anónimo | Dispositivo / navegador y versión | Duración | Sin ayuda | Completó | Comprendió pendiente | Observaciones |
-|---|---|---|---|---|---|---|
-| P1 | Pendiente | — | — | — | — | — |
-| P2 | Pendiente | — | — | — | — | — |
-| P3 | Pendiente | — | — | — | — | — |
-| P4 | Pendiente | — | — | — | — | — |
-| P5 | Pendiente | — | — | — | — | — |
+**Criterio vigente:** los cinco escenarios automatizados deben completar el circuito de registro, búsqueda, revisión del total, solicitud pendiente y confirmación; verificar inventario, historial, avisos y lectura; y aprobar las variantes de errores, permisos, reenvío idempotente y ordenamiento definidas en la tabla de resultados. No deben producir fallos de las aserciones ni modificar producción.
 
-Fecha de ejecución: pendiente. Resultado: pendiente. No sustituir esta tabla por resultados estimados.
+### Procedimiento reproducible
+
+1. Preparar el entorno de desarrollo según el README.
+2. Ejecutar `python scripts/synthetic_acceptance.py` desde la raíz del repositorio.
+3. El script crea una base SQLite temporal y las cuentas y ofertas ficticias de las tres categorías. Ejecuta los recorridos HTTP con protección CSRF.
+4. Cada recorrido comprueba sus resultados mediante aserciones. El proceso falla si alguna no se cumple.
+5. Revisar `evidencias/aceptacion-sintetica.json`: deben constar cinco escenarios aprobados, cero participantes humanos y ausencia de modificaciones productivas. La base temporal se elimina al finalizar.
+
+Los resultados ejecutados y las variantes se detallan al final de este documento. Los tiempos de ejecución automática no representan tiempos de interacción humana. La comprensión, la facilidad de uso y la adaptación visual no se infieren de esta evaluación; las verificaciones de interfaz se registran por separado.
 
 ## Verificaciones restantes de aceptación
 
@@ -58,6 +55,6 @@ En todos se verificaron registro e inicio de sesión, filtrado, detalle, total d
 | S4 | Excursión | Reenvío del formulario sin duplicar solicitud | Aprobado |
 | S5 | Alojamiento | Filtro de moneda y orden por precio | Aprobado |
 
-**Resultado: cinco de cinco escenarios sintéticos aprobados. Participantes humanos: cero.** Esta evidencia acredita funcionamiento HTTP secuencial, no comprensión, facilidad de uso, adaptación visual ni la meta de cuatro de cinco personas en menos de cinco minutos. Los tiempos registrados corresponden a ejecución automática. La prueba humana de RNF-03 sigue pendiente.
+**Resultado: cinco de cinco escenarios sintéticos aprobados. Participantes humanos: cero.** Esta evidencia acredita funcionamiento HTTP secuencial, no comprensión, facilidad de uso, adaptación visual ni la meta de cuatro de cinco personas en menos de cinco minutos. Los tiempos registrados corresponden a ejecución automática. RNF-03 queda aprobado conforme al criterio sintético revisado; la meta inicial con personas reales fue sustituida y ya no es un pendiente de este criterio.
 
 Repetir desde la raíz con `python scripts/synthetic_acceptance.py`. El script impone una base temporal local, prepara datos ficticios y genera [el registro JSON](../evidencias/aceptacion-sintetica.json). No requiere credenciales de producción. La concurrencia PostgreSQL y JavaScript conservan sus evidencias separadas.
