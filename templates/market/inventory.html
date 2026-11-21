@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<section class="form-page">
-<h1>Ajustar disponibilidad</h1>
-<h2>{{ offer.title }}</h2>
-<p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
-<p>Indicá el saldo disponible completo. Si hay una confirmación, devolución u otro ajuste desde que abriste este formulario, deberás revisar el saldo antes de guardar.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<button>Guardar ajuste de cupo</button></form>
-<p><a href="{% url 'inventory' offer.pk %}">Volver a cargar el cupo actual y revisar el ajuste</a></p>
-<a href="{% url 'dashboard' %}">Volver al panel</a>
-</section>
+    <section class="form-page">
+        <h1>Ajustar disponibilidad</h1>
+        <h2>{{ offer.title }}</h2>
+        <p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
+        <p>Indicá el saldo disponible completo. Si hay una confirmación, devolución u otro ajuste desde que abriste este formulario, deberás revisar el saldo antes de guardar.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button>Guardar ajuste de cupo</button>
+        </form>
+        <p><a href="{% url 'inventory' offer.pk %}">Volver a cargar el cupo actual y revisar el ajuste</a></p>
+        <a href="{% url 'dashboard' %}">Volver al panel</a>
+    </section>
 {% endblock %}

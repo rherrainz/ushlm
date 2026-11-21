@@ -1,9 +1,13 @@
 {% extends 'admin/base_site.html' %}
 {% block content %}
-<h1>Ajustar disponibilidad: {{ offer.title }}</h1>
-<p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
-<p>Ingresá el saldo completo. Un cambio de inventario posterior a la apertura del formulario exige revisar el ajuste.</p>
-<form method="post">{% csrf_token %}{{ form.as_p }}<input type="submit" value="Guardar ajuste de cupo"></form>
-<p><a href="{% url 'admin:market_offer_inventory' offer.pk %}">Volver a cargar el cupo actual y revisar el ajuste</a></p>
-<a href="{% url 'admin:market_offer_change' offer.pk %}">Volver a la oferta</a>
+    <h1>Ajustar disponibilidad: {{ offer.title }}</h1>
+    <p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
+    <p>Ingresá el saldo completo. Un cambio de inventario posterior a la apertura del formulario exige revisar el ajuste.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Guardar ajuste de cupo">
+    </form>
+    <p><a href="{% url 'admin:market_offer_inventory' offer.pk %}">Volver a cargar el cupo actual y revisar el ajuste</a></p>
+    <a href="{% url 'admin:market_offer_change' offer.pk %}">Volver a la oferta</a>
 {% endblock %}

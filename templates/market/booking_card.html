@@ -1,3 +1,52 @@
 {% load market_dates %}
-<article class="booking"><p class="eyebrow">SOLICITUD #{{ booking.pk }} · {{ booking.created_at|date:'d/m/Y H:i' }}</p><h2>{{ booking.service.title }}</h2><p><strong>Estado: {{ booking.get_status_display }}</strong> · {{ booking.quantity }} {{ booking.service.unit }}</p><p>{{ booking.service.starts_at|local_service_date }} → {{ booking.service.ends_at|local_service_date }} (Ushuaia) · {{ booking.service.location }}</p><p>Precio registrado: {{ booking.currency }} {{ booking.price }} · <strong>Total: {{ booking.currency }} {{ booking.total }}</strong></p><p>{{ booking.description }}</p><details><summary>Condiciones registradas e historial</summary><p>{{ booking.conditions|linebreaksbr }}</p><p>Prestador: {{ booking.service.provider }} · {{ booking.service.provider_contact }}</p><ol>{% for event in booking.history.all %}<li>{{ event.created_at|date:'d/m/Y H:i' }} · {{ event.previous|default:'Inicio' }} → {{ event.current }} · {{ event.reason }}</li>{% endfor %}</ol></details>
-{% if provider %}<p>Turista: {{ booking.tourist.username }} · Contacto: {{ booking.contact }}</p>{% if booking.status == 'pending' %}<div class="actions"><form method="post" action="{% url 'action' booking.pk 'confirm' %}">{% csrf_token %}<button>Aceptar solicitud</button></form><form method="post" action="{% url 'action' booking.pk 'reject' %}">{% csrf_token %}<label>Motivo (opcional)<input name="reason" maxlength="500"></label><button class="subtle">Rechazar</button></form></div>{% elif booking.status == 'confirmed' %}<form method="post" action="{% url 'action' booking.pk 'cancel_confirmed' %}">{% csrf_token %}<label>Motivo de cancelación<input name="reason" required maxlength="500"></label><button class="subtle">Registrar cancelación</button></form>{% endif %}{% elif booking.status == 'pending' %}<form method="post" action="{% url 'action' booking.pk 'cancel_pending' %}">{% csrf_token %}<button class="subtle">Cancelar solicitud pendiente</button></form>{% endif %}</article>
+<article class="booking">
+    <p class="eyebrow">SOLICITUD #{{ booking.pk }} · {{ booking.created_at|date:'d/m/Y H:i' }}</p>
+    <h2>{{ booking.service.title }}</h2>
+    <p><strong>Estado: {{ booking.get_status_display }}</strong> · {{ booking.quantity }} {{ booking.service.unit }}</p>
+    <p>{{ booking.service.starts_at|local_service_date }} → {{ booking.service.ends_at|local_service_date }} (Ushuaia) · {{ booking.service.location }}</p>
+    <p>Precio registrado: {{ booking.currency }} {{ booking.price }} · <strong>Total: {{ booking.currency }} {{ booking.total }}</strong></p>
+    <p>{{ booking.description }}</p>
+    <details>
+        <summary>Condiciones registradas e historial</summary>
+        <p>{{ booking.conditions|linebreaksbr }}</p>
+        <p>Prestador: {{ booking.service.provider }} · {{ booking.service.provider_contact }}</p>
+        <ol>
+            {% for event in booking.history.all %}
+                <li>{{ event.created_at|date:'d/m/Y H:i' }} · {{ event.previous|default:'Inicio' }} → {{ event.current }} · {{ event.reason }}</li>
+            {% endfor %}
+        </ol>
+    </details>
+    {% if provider %}
+        <p>Turista: {{ booking.tourist.username }} · Contacto: {{ booking.contact }}</p>
+        {% if booking.status == 'pending' %}
+            <div class="actions">
+                <form method="post" action="{% url 'action' booking.pk 'confirm' %}">
+                    {% csrf_token %}
+                    <button>Aceptar solicitud</button>
+                </form>
+                <form method="post" action="{% url 'action' booking.pk 'reject' %}">
+                    {% csrf_token %}
+                    <label>
+                        Motivo (opcional)
+                        <input name="reason" maxlength="500">
+                    </label>
+                    <button class="subtle">Rechazar</button>
+                </form>
+            </div>
+        {% elif booking.status == 'confirmed' %}
+            <form method="post" action="{% url 'action' booking.pk 'cancel_confirmed' %}">
+                {% csrf_token %}
+                <label>
+                    Motivo de cancelación
+                    <input name="reason" required maxlength="500">
+                </label>
+                <button class="subtle">Registrar cancelación</button>
+            </form>
+        {% endif %}
+    {% elif booking.status == 'pending' %}
+        <form method="post" action="{% url 'action' booking.pk 'cancel_pending' %}">
+            {% csrf_token %}
+            <button class="subtle">Cancelar solicitud pendiente</button>
+        </form>
+    {% endif %}
+</article>
