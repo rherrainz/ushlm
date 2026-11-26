@@ -10,7 +10,7 @@
         {% for offer in offers %}
             <article class="card card-body">
                 <h3>{{ offer.title }}</h3>
-                <p>{{ offer.get_status_display }} · Cupo: {{ offer.stock }}</p>
+                <p><span class="status status-{{ offer.status }}">{{ offer.get_status_display }}</span> · Cupo: {{ offer.stock }}</p>
                 <p>Vence: {{ offer.expires_at|date:'d/m H:i' }}</p>
                 <a href="{% url 'edit_offer' offer.pk %}">Editar oferta</a>
                 ·

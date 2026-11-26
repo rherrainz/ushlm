@@ -11,3 +11,6 @@ staticfiles/
 .vercel/
 backups/
 *.backup.json
+
+# Local browser verification artifacts
+output/playwright/

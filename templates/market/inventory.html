@@ -8,7 +8,7 @@
         <p>Indicá el saldo disponible completo. Si hay una confirmación, devolución u otro ajuste desde que abriste este formulario, deberás revisar el saldo antes de guardar.</p>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.as_div }}
             <button>Guardar ajuste de cupo</button>
         </form>
         <p><a href="{% url 'inventory' offer.pk %}">Volver a cargar el cupo actual y revisar el ajuste</a></p>

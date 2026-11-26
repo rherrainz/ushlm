@@ -1,0 +1,17 @@
+{% load static %}
+{% if offer.category.kind == 'stay' %}
+    <img src="{% static 'market/images/photos/hotel-800.webp' %}"
+         srcset="{% static 'market/images/photos/hotel-480.webp' %} 480w, {% static 'market/images/photos/hotel-800.webp' %} 800w"
+         sizes="{{ image_sizes|default:'(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw' }}"
+         alt="Habitación con cama doble y luz cálida" width="800" height="600" loading="lazy" decoding="async">
+{% elif offer.category.kind == 'car' %}
+    <img src="{% static 'market/images/photos/car-800.webp' %}"
+         srcset="{% static 'market/images/photos/car-480.webp' %} 480w, {% static 'market/images/photos/car-800.webp' %} 800w"
+         sizes="{{ image_sizes|default:'(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw' }}"
+         alt="Auto compacto blanco de alquiler" width="800" height="600" loading="lazy" decoding="async">
+{% else %}
+    <img src="{% static 'market/images/photos/boats-800.webp' %}"
+         srcset="{% static 'market/images/photos/boats-480.webp' %} 480w, {% static 'market/images/photos/boats-800.webp' %} 800w"
+         sizes="{{ image_sizes|default:'(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw' }}"
+         alt="Barcos amarillos en una bahía al atardecer" width="800" height="600" loading="lazy" decoding="async">
+{% endif %}
