@@ -4,11 +4,15 @@
     <a href="/">← Volver a las ofertas</a>
     <div class="detail">
         <article>
+            <figure class="detail-photo">
+                {% include 'market/offer_image.html' with image_sizes='(max-width: 720px) 100vw, 60vw' %}
+                <figcaption>Imagen ilustrativa de la categoría · Oferta de demostración</figcaption>
+            </figure>
             <p class="eyebrow">{{ offer.category }} · {{ offer.location }}</p>
             <h1>{{ offer.title }}</h1>
             <span class="badge">−{{ offer.discount }}%</span>
             <p>{{ offer.description|linebreaksbr }}</p>
-            <h2>Una prestación cerrada</h2>
+            <h2>Tu experiencia, en detalle</h2>
             <p>Inicio: {{ offer.starts_at|date:'d/m/Y H:i' }} · Fin: {{ offer.ends_at|date:'d/m/Y H:i' }} (Ushuaia)</p>
             <p>Unidad: {{ offer.unit }}{% if offer.occupancy %} · Ocupación: {{ offer.occupancy }} personas por unidad{% endif %}</p>
             <h2>Condiciones</h2>
@@ -16,7 +20,8 @@
             <h2>Tu prestador</h2>
             <p>{{ offer.provider.name }} · {{ offer.provider.contact }}</p>
         </article>
-        <aside class="card card-body">
+        <aside class="card card-body booking-summary" aria-label="Resumen de la solicitud">
+            <p class="eyebrow">TU PRÓXIMO PLAN</p>
             <p class="old">{{ offer.currency }} {{ offer.reference_price }}</p>
             <p class="price">{{ offer.currency }} {{ offer.price }} <small>/ {{ offer.unit }}</small></p>
             <p>{{ offer.stock }} unidades disponibles</p>
@@ -31,7 +36,7 @@
                           data-unit-cents="{{ unit_cents }}"
                           data-currency="{{ offer.currency }}">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        {{ form.as_div }}
                         <p>Precio por {{ offer.unit }}: {{ offer.currency }} {{ offer.price }}</p>
                         <p>
                             <strong>

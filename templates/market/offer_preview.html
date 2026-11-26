@@ -19,7 +19,7 @@
         <h2>Confirmar o corregir</h2>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.as_div }}
             <button name="intent" value="save">Confirmar y guardar</button>
             <button class="subtle" name="intent" value="preview">Actualizar vista previa</button>
         </form>

@@ -1,37 +1,35 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-    <section class="hero">
+    <section class="hero" aria-labelledby="hero-title">
+        <picture class="hero-picture">
+            <source media="(max-width: 640px)" srcset="{% static 'market/images/photos/hero-mobile-800.webp' %}">
+            <img src="{% static 'market/images/photos/hero-1600.webp' %}"
+                 srcset="{% static 'market/images/photos/hero-1000.webp' %} 1000w, {% static 'market/images/photos/hero-1600.webp' %} 1600w, {% static 'market/images/photos/hero-2400.webp' %} 2400w"
+                 sizes="(max-width: 1440px) 100vw, 1320px" alt="" width="1600" height="900" fetchpriority="high">
+        </picture>
         <p class="eyebrow">USHUAIA · EXPERIENCIAS DE ÚLTIMO MOMENTO</p>
-        <h1>Todavía estás a tiempo.<br><em>Pagá menos.</em></h1>
+        <h1 id="hero-title">Todavía estás a tiempo.<br><em>Pagá menos.</em></h1>
         <p>Tu próxima aventura está más cerca de lo que pensás.<br>Excursiones, estadías y autos con salidas en las próximas 72 horas.</p>
         <a class="button" href="#ofertas">Encontrá tu oportunidad ↓</a>
-        <div class="mountain" aria-hidden="true">
-            54°48′ S &nbsp; 68°18′ O
-            <br>
-            EL FIN DEL MUNDO. TU PRÓXIMO PLAN.
-        </div>
-        {% if page_obj.has_other_pages %}
-            <nav aria-label="Páginas de ofertas">
-                {% if page_obj.has_previous %}
-                    <a href="?{{ filter_query }}&amp;page={{ page_obj.previous_page_number }}">Anterior</a>
-                {% endif %}
-                <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-                {% if page_obj.has_next %}
-                    <a href="?{{ filter_query }}&amp;page={{ page_obj.next_page_number }}">Siguiente</a>
-                {% endif %}
-            </nav>
-        {% endif %}
+        <p class="hero-coordinate">54°48′ S · 68°18′ O <span>Un lugar extraordinario. Tu próximo plan.</span></p>
     </section>
-    <section id="ofertas">
+    <div class="trust-strip" aria-label="Cómo funciona">
+        <span><strong>72 horas</strong> para tu próximo plan</span>
+        <span><strong>Prestadores locales</strong> en Ushuaia</span>
+        <span><strong>Pago directo</strong> al prestador</span>
+    </div>
+    <section id="ofertas" aria-labelledby="offers-title">
         <div class="section-heading">
             <div>
                 <p class="eyebrow">PLANES QUE NO ESPERAN</p>
-                <h2>Últimos lugares, mejores precios</h2>
+                <h2 id="offers-title">Últimos lugares,<br>mejores precios.</h2>
             </div>
             <span>Disponibilidad real · Confirmación del prestador</span>
         </div>
-        <form class="filters" method="get">
+        <search aria-label="Filtrar ofertas">
+        <form class="filters" method="get" action="{% url 'catalog' %}#ofertas">
             <label>
                 Categoría
                 <select name="category">
@@ -62,8 +60,25 @@
                 </select>
             </label>
             <button>Buscar ofertas</button>
-            <a href="/">Limpiar</a>
+            <a href="{% url 'catalog' %}#ofertas">Limpiar</a>
         </form>
+        </search>
+        <div class="filter-chips" aria-label="Filtros activos">
+            {% if request.GET.category %}
+                <a href="{% querystring category=None page=None %}#ofertas" aria-label="Quitar filtro de categoría">Categoría: {% for category in categories %}{% if request.GET.category == category.kind %}{{ category }}{% endif %}{% endfor %} ×</a>
+            {% endif %}
+            {% if request.GET.date %}
+                <a href="{% querystring date=None page=None %}#ofertas" aria-label="Quitar filtro de fecha">Fecha: {{ request.GET.date }} ×</a>
+            {% endif %}
+            {% if request.GET.currency %}
+                <a href="{% querystring currency=None page=None %}#ofertas" aria-label="Quitar filtro de moneda">Moneda: {{ request.GET.currency }} ×</a>
+            {% endif %}
+        </div>
+        <div class="results-summary">
+            <p><strong>{{ page_obj.paginator.count }}</strong> {% if page_obj.paginator.count == 1 %}oportunidad disponible{% else %}oportunidades disponibles{% endif %}</p>
+            {% if filter_query %}<a href="{% url 'catalog' %}#ofertas">Quitar filtros y ver todas</a>{% endif %}
+            <span>Fotografías ilustrativas · Ofertas de demostración</span>
+        </div>
         {% if error %}
             <p role="alert">{{ error }}</p>
         {% endif %}
@@ -71,8 +86,9 @@
             {% for offer in offers %}
                 <article class="card">
                     <div class="card-art {{ offer.category.kind }}">
+                        {% include 'market/offer_image.html' %}
                         <span class="badge">−{{ offer.discount }}%</span>
-                        <span>{{ offer.category }}</span>
+                        <span class="category-label">{{ offer.category }}</span>
                     </div>
                     <div class="card-body">
                         <p class="eyebrow">{{ offer.location }}</p>
@@ -86,11 +102,15 @@
                     </div>
                 </article>
             {% empty %}
-                <p>No hay ofertas disponibles con estos filtros. Probá otra fecha o categoría.</p>
+                <div class="empty-state">
+                    <h3>Tu próximo plan todavía puede aparecer.</h3>
+                    <p>No hay ofertas disponibles con estos filtros. Probá otra fecha o categoría.</p>
+                    <a class="button subtle" href="{% url 'catalog' %}#ofertas">Ver todas las ofertas</a>
+                </div>
             {% endfor %}
         </div>
         {% if page_obj.has_other_pages %}
-            <nav aria-label="Páginas de ofertas">
+            <nav class="pagination" aria-label="Páginas de ofertas">
                 {% if page_obj.has_previous %}
                     <a href="?{{ filter_query }}&amp;page={{ page_obj.previous_page_number }}">Anterior</a>
                 {% endif %}
@@ -101,9 +121,15 @@
             </nav>
         {% endif %}
     </section>
-    <section class="steps">
-        <h2>Tu plan, en tres pasos</h2>
-        <p>01 · Elegí una oferta &nbsp; 02 · Enviá tu solicitud &nbsp; 03 · Esperá la confirmación del prestador</p>
-        <p>La solicitud pendiente no reserva cupo. Coordinás el pago directamente con el prestador.</p>
+    <section class="steps" aria-labelledby="steps-title">
+        <p class="eyebrow">SIMPLE, DE PRINCIPIO A FIN</p>
+        <h2 id="steps-title">Menos vueltas. Más Ushuaia.</h2>
+        <ol class="steps-grid">
+            <li><span>01</span><h3>Encontrá tu plan</h3><p>Elegí una experiencia, una estadía o un auto para las próximas 72 horas.</p></li>
+            <li><span>02</span><h3>Enviá tu solicitud</h3><p>Revisá las fechas, las condiciones y el total antes de solicitar.</p></li>
+            <li><span>03</span><h3>Coordiná y disfrutá</h3><p>Esperá la confirmación del prestador y coordiná el pago directamente.</p></li>
+        </ol>
+        <p class="fine-print">La solicitud pendiente no reserva cupo. No se realizan cobros en esta plataforma.</p>
     </section>
+    {% include 'market/destination_gallery.html' %}
 {% endblock %}

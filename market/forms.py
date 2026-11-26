@@ -4,14 +4,14 @@ from django.contrib.auth.models import User
 from .models import Offer
 
 class SignupForm(UserCreationForm):
-    first_name = forms.CharField(label='Nombre', max_length=150)
-    email = forms.EmailField(label='Correo')
+    first_name = forms.CharField(label='Nombre', max_length=150, widget=forms.TextInput(attrs={'autocomplete': 'given-name'}))
+    email = forms.EmailField(label='Correo', widget=forms.EmailInput(attrs={'autocomplete': 'email'}))
     class Meta:
         model = User
         fields = ['username', 'first_name', 'email', 'password1', 'password2']
 
 class BookingForm(forms.Form):
-    quantity = forms.IntegerField(label='Cantidad', min_value=1, max_value=2147483647)
+    quantity = forms.IntegerField(label='Cantidad', min_value=1, max_value=2147483647, widget=forms.NumberInput(attrs={'inputmode': 'numeric'}))
     contact = forms.CharField(label='Contacto para coordinar con el prestador', max_length=200)
     token = forms.UUIDField(widget=forms.HiddenInput)
     quote = forms.CharField(widget=forms.HiddenInput)

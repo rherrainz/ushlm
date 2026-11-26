@@ -6,7 +6,7 @@
         <h1>Ingresá a tu cuenta</h1>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.as_div }}
             <input type="hidden" name="next" value="{{ next }}">
             <button>Ingresar</button>
         </form>

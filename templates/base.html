@@ -6,34 +6,46 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{% block title %}USH Last Minute{% endblock %}</title>
         <link rel="icon" type="image/png" href="{% static 'market/images/favicon.png' %}">
-        <link rel="apple-touch-icon" href="{% static 'market/images/favicon.png' %}">
+        <link rel="apple-touch-icon" href="{% static 'market/images/apple-touch-icon.png' %}">
         <link rel="stylesheet" href="{% static 'market/style.css' %}">
         <script defer src="{% static 'market/countdown.js' %}"></script>
+        <script defer src="{% static 'market/navigation.js' %}"></script>
     </head>
     <body>
         <a class="skip" href="#contenido">Saltar al contenido</a>
-        <header>
-            <a class="brand" href="{% url 'catalog' %}" aria-label="USH Last Minute — Inicio"><img src="{% static 'market/images/ush-last-minute-logo.png' %}" alt="USH Last Minute" width="1254" height="1254" fetchpriority="high"></a>
-            <nav aria-label="Principal">
-                <a href="{% url 'catalog' %}">Explorá ofertas</a>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'notifications' %}">Avisos</a>
-                    <a href="{% url 'bookings' %}">Mis solicitudes</a>
-                    {% if user.provider %}
-                        <a href="{% url 'dashboard' %}">Panel prestador</a>
-                    {% endif %}
-                    {% if user.is_staff %}
-                        <a href="/admin/">Administración</a>
-                    {% endif %}
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button class="subtle">Salir</button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login' %}">Ingresá</a>
-                    <a class="button" href="{% url 'signup' %}">Crear cuenta</a>
-                {% endif %}
-            </nav>
+        <header class="site-header">
+            <div class="header-inner">
+                <a class="brand" href="{% url 'catalog' %}" aria-label="USH Last Minute — Inicio">
+                    <img src="{% static 'market/images/brand.png' %}" alt="" width="144" height="144">
+                    <span class="brand-copy">
+                        USH <strong>Last Minute</strong>
+                        <small>Tu próximo plan, en el fin del mundo.</small>
+                    </span>
+                </a>
+                <nav class="site-nav" aria-label="Principal">
+                    <button class="menu-toggle subtle" type="button" aria-expanded="false" aria-controls="site-menu" hidden>Menú <span aria-hidden="true">☰</span></button>
+                    <div id="site-menu" class="site-menu">
+                        <a href="{% url 'catalog' %}" {% if request.resolver_match.url_name == 'catalog' %}aria-current="page"{% endif %}>Explorá ofertas</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'notifications' %}" {% if request.resolver_match.url_name == 'notifications' %}aria-current="page"{% endif %}>Avisos</a>
+                            <a href="{% url 'bookings' %}" {% if request.resolver_match.url_name == 'bookings' %}aria-current="page"{% endif %}>Mis solicitudes</a>
+                            {% if user.provider %}
+                                <a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}aria-current="page"{% endif %}>Panel prestador</a>
+                            {% endif %}
+                            {% if user.is_staff %}
+                                <a href="/admin/">Administración</a>
+                            {% endif %}
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="subtle">Salir</button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'login' %}" {% if request.resolver_match.url_name == 'login' %}aria-current="page"{% endif %}>Ingresá</a>
+                            <a class="button" href="{% url 'signup' %}" {% if request.resolver_match.url_name == 'signup' %}aria-current="page"{% endif %}>Crear cuenta</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
         </header>
         <main id="contenido">
             {% for message in messages %}

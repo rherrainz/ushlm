@@ -13,7 +13,7 @@
         </p>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.as_div }}
             {% if inventory_separate %}
                 <button name="intent" value="preview">Vista previa</button>
             {% endif %}
