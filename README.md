@@ -6,7 +6,13 @@
 
 **Aplicación:** https://ushlm.vercel.app/ · **Entrega final:** 20/11/2026.
 
-**Estado final:** 100 % del alcance académico revisado (21/11/2026). Respaldo preparado y probado; ejecución periódica real desactivada. Ver matriz del apartado 11.
+**Estado actual — 26/11/2026:** aplicación publicada con frontend fotográfico, plurales corregidos, gestión de solicitudes en la web para administradores y prestadores y renovación de la demostración en ciclos de 48 horas. La suite Django más reciente ejecutó 97 pruebas: 93 aprobadas y 4 omitidas en SQLite por requerir PostgreSQL. Ver el [estado actual y sus verificaciones](#12-evolución-y-estado-actual--26112026).
+
+**Cierre académico — 21/11/2026:** 100 % del alcance académico revisado según la matriz del apartado 11. El respaldo está preparado y probado, pero su ejecución periódica permanece desactivada. La tarea activa de renovación de ofertas demo es independiente del respaldo.
+
+**Accesos principales:** [Catálogo](https://ushlm.vercel.app/) · [Ingresar](https://ushlm.vercel.app/cuenta/login/) · [Gestionar solicitudes](https://ushlm.vercel.app/gestion/solicitudes/) · [Panel prestador](https://ushlm.vercel.app/prestador/) · [Administración Django](https://ushlm.vercel.app/admin/).
+
+**Lectura rápida:** [Instalación](#4-instalación-y-ejecución) · [Recorrido de demostración](#5-guía-de-demostración) · [Roles y cuentas](#122-cuentas-accesos-y-permisos) · [Gestión web de solicitudes](#123-gestión-de-solicitudes-desde-la-web) · [Renovación demo](#124-renovación-de-las-ofertas-demo) · [Pruebas actuales](#125-verificación-del-estado-actual).
 
 **Bajada:** «Lo mejor de Ushuaia, a último momento». **Mensaje principal:** «Todavía estás a tiempo. Pagá menos».
 
@@ -30,9 +36,9 @@ Dominio propuesto: `ush-lm.ar`. Alternativas previstas: `ushlastminute.ar` y `us
 
 ## 2. Problema, solución y alcance
 
-Los turistas necesitan encontrar oportunidades cercanas y conocer sus condiciones. Los prestadores necesitan ofrecer inventario remanente y confirmar únicamente la disponibilidad real. El administrador habilita prestadores y gestiona categorías y publicaciones.
+Los turistas necesitan encontrar oportunidades cercanas y conocer sus condiciones. Los prestadores necesitan ofrecer inventario remanente y confirmar únicamente la disponibilidad real. El administrador habilita prestadores, gestiona categorías y publicaciones y, con el permiso correspondiente, responde solicitudes desde la web.
 
-La solución incluye tres perfiles: turista registrado, prestador asociado a una cuenta responsable única y administrador de Django. El registro público crea turistas; el administrador crea las cuentas prestadoras y su habilitación. No hay autoaprobación de prestadores.
+La solución incluye tres perfiles: turista registrado, prestador asociado a una cuenta responsable única y administrador con acceso a la gestión web y al panel Django. El registro público crea turistas; el administrador crea las cuentas prestadoras y su habilitación. No hay autoaprobación de prestadores.
 
 Reglas implementadas:
 
@@ -46,8 +52,8 @@ Reglas implementadas:
 - El detalle muestra precio por unidad, moneda y total antes de solicitar. JavaScript calcula con centavos enteros; **Recalcular total** ofrece una vista previa desde el servidor sin crear una solicitud. El servidor siempre calcula el total y no confía en precios o totales enviados por el navegador.
 - El formulario incluye una referencia firmada de precio, moneda, descripción, condiciones y datos del servicio. Al solicitar se compara con la oferta actual bajo bloqueo. Si cambió, no se registra la solicitud: se muestran la información y el total actualizados, se conservan cantidad/contacto y se pide revisar antes de volver a enviar.
 - La solicitud conserva una copia histórica de precio, moneda, descripción, condiciones y datos del servicio/prestador. Cambios posteriores no alteran esa copia. Un UUID único evita duplicados por reenvío del mismo formulario; el reenvío de una solicitud ya creada devuelve la existente, aunque la oferta haya cambiado después.
-- El turista cancela pendientes propias. El prestador rechaza pendientes o cancela confirmadas propias con motivo obligatorio. El cupo se devuelve únicamente si la oferta sigue vigente y el prestador habilitado, una sola vez.
-- Las pendientes vencen al expirar su publicación; el comando periódico y los listados materializan ese estado y su historial. Sin ejecutar el comando, el servidor igualmente impide aceptar una pendiente vencida. Cerrar o suspender una oferta no adelanta automáticamente el vencimiento de sus pendientes.
+- El turista cancela pendientes propias. El prestador gestiona pendientes y confirmadas propias; la administración autorizada puede gestionar las de todos los prestadores. Rechazar una pendiente no consume cupo y cancelar una confirmada requiere motivo obligatorio. El cupo se devuelve únicamente si la oferta sigue vigente y el prestador habilitado, una sola vez.
+- Las pendientes vencen al expirar su publicación; el comando periódico y los listados materializan ese estado y su historial. Sin ejecutar el comando, el servidor igualmente impide aceptar una pendiente vencida. Cerrar o suspender una oferta no adelanta automáticamente el vencimiento de sus pendientes. La rotación de la demostración es una operación específica: al cerrar una edición, vence sus pendientes conservando el historial.
 - Escrituras mediante POST y CSRF, validación del servidor y errores conservando los datos del formulario. Listados autenticados filtrados por propietario; la administración con permiso `market.change_booking` puede gestionar todas las solicitudes desde la web. Relaciones protegidas conservan actividad e historial; el panel Django no permite borrar entidades ni editar solicitudes/historial directamente.
 
 **Exclusiones:** cobros, integraciones de inventario externo, guías freelance, múltiples destinos y reseñas. Los pagos se coordinan con el prestador y el inventario externo se carga manualmente.
@@ -65,13 +71,16 @@ Monolito Django con plantillas, CSS y JavaScript puntual. SQLite para desarrollo
 | asgiref / sqlparse | 3.13.0 / 0.6.1 |
 | PostgreSQL | Neon, entorno desplegado y base aislada de evaluación |
 
-Dependencias fijadas en [requirements.txt](requirements.txt). Las versiones provienen del entorno utilizado. Node.js es opcional para ejecutar las tres pruebas del cálculo de vista previa; no es una dependencia de ejecución de la aplicación.
+Dependencias fijadas en [requirements.txt](requirements.txt). Las versiones provienen del entorno utilizado. Node.js es opcional para ejecutar las cinco pruebas JavaScript de vista previa y vencimiento; no es una dependencia de ejecución de la aplicación.
 
 - [config/settings.py](config/settings.py) y [rutas](config/urls.py): configuración y entorno.
 - [modelos](market/models.py), [migración inicial](market/migrations/0001_initial.py) y [migración de inventario](market/migrations/0002_offer_stock_version_alter_offer_stock.py): datos, validaciones y restricciones. La segunda migración conserva el cupo existente e inicializa su versión en cero.
 - [servicios](market/services.py): transacciones, comparación de versión, referencias firmadas, solicitudes, vencimientos e historial.
 - [vistas](market/views.py), [formularios](market/forms.py), [administración](market/admin.py) y [plantillas](templates/market/): operaciones y permisos.
-- [estilos](static/market/style.css), [contador](static/market/countdown.js) y [vista previa](static/market/booking-preview.js).
+- [estilos](static/market/style.css), [navegación adaptable](static/market/navigation.js), [contador](static/market/countdown.js) y [vista previa](static/market/booking-preview.js).
+- [cantidades en español](market/templatetags/market_quantities.py), [imágenes de categoría](templates/market/offer_image.html), [galería](templates/market/destination_gallery.html) y [procedencia de las fotos](static/market/images/photos/README.md).
+- [renovación demo](market/demo_renewal.py), [comando manual](market/management/commands/renew_demo.py) y [migración de su estado persistente](market/migrations/0006_demorefreshstate.py).
+- [gestión web de solicitudes](templates/market/booking_management.html) y sus [pruebas de permisos, cupo e historial](market/test_booking_management.py).
 - [suite original](market/tests.py), [regresiones](market/test_regressions.py), [pruebas JavaScript](market/booking_preview.test.mjs) y [semilla](market/management/commands/seed_demo.py).
 
 ```mermaid
@@ -89,6 +98,8 @@ erDiagram
     OFFER ||--o{ NOTIFICATION : informa
     BOOKING o|--o{ NOTIFICATION : origina
 ```
+
+`DemoRefreshState` conserva el ciclo procesado y los IDs de la edición demo activa; es un registro operativo independiente del diagrama de relaciones de negocio.
 
 `User` es el modelo de autenticación de Django. El actor del historial puede ser nulo para eventos automáticos. Las relaciones de negocio usan `PROTECT` para evitar borrados en cascada. Las capturas de evaluación están en [evidencias](evidencias/).
 
@@ -110,7 +121,7 @@ Abrir http://127.0.0.1:8000/. Para una instalación existente conservar `.env` y
 
 `.env.example` contiene configuración de desarrollo y una clave pública exclusiva para uso local. Para producción usar clave privada, `DJANGO_DEBUG=0`, hosts reales, HTTPS y revisar `check --deploy`. El lector de `.env` admite `CLAVE=valor` y comentarios completos; no interpreta expansión ni comillas. El entorno tiene precedencia. `.env`, bases SQLite y `.venv` están ignorados por Git.
 
-La semilla crea categorías, un prestador habilitado, tres ofertas con fechas futuras relativas a la ejecución y las cuentas `turista_demo`, `prestador_demo` y `admin_demo`, con la contraseña elegida. Usa correos `example.invalid`. Es transaccional y no sobrescribe cuentas demo existentes. Para otra demostración actualizar fechas desde el panel o usar otra base vacía, migrar y ejecutar la semilla. No borrar bases con actividad real.
+La semilla crea categorías, un prestador habilitado, tres ofertas con fechas futuras relativas a la ejecución y las cuentas `turista_demo`, `prestador_demo` y `admin_demo`, con la contraseña elegida. Usa correos `example.invalid`. Es transaccional y no sobrescribe cuentas demo existentes. Para repetir una demostración local, actualizar fechas desde el panel o usar otra base vacía, migrar y ejecutar la semilla. En el sitio público existente se utiliza la renovación del apartado 12.4: no volver a ejecutar `seed_demo` ni borrar bases con actividad real. Un merge o push transfiere código; no copia la base SQLite local a Neon.
 
 Programar periódicamente el vencimiento; no se instala una tarea del sistema automáticamente:
 
@@ -145,16 +156,17 @@ Esperar que la base esté lista. Las pruebas crean y destruyen `test_ushlm`; no 
 1. Ingresar al catálogo sin parámetros: el selector muestra **Mayor descuento**. Comparar porcentajes y elegir **Vencimiento más cercano** para cambiar el orden. Filtrar por categoría y fecha.
 2. Abrir el detalle, revisar fechas fijas, unidad, ocupación, condiciones y prestador. Como turista, cambiar cantidad y observar el total. Con JavaScript desactivado, completar contacto y usar **Recalcular total**: aún no se crea una solicitud.
 3. Solicitar una unidad con `turista_demo` o una cuenta nueva. Ver pendiente, total y copia histórica en **Mis solicitudes**. El cupo no cambia.
-4. Como `prestador_demo`, aceptar desde **Panel prestador**. Cambian estado, cupo y versión; el turista ve confirmación e historial. Los pagos se coordinan directamente.
-5. Reproducir el formulario antiguo: con cupo 2, abrir **Editar oferta** en una pestaña. Confirmar una unidad desde otra pestaña y guardar solo la descripción en la primera. El cupo permanece en 1. Repetir desde el formulario general de administración.
-6. Abrir **Ajustar disponibilidad** dos veces para la misma oferta. Guardar un saldo desde la primera pestaña; al guardar desde la segunda aparece conflicto y no cambia el saldo. Usar el enlace para recargar, revisar el saldo y decidir un nuevo ajuste. Repetir desde `/admin/`, entrando en la oferta y su enlace **Ajustar disponibilidad**.
-7. Abrir un detalle como turista y, desde otra sesión, cambiar precio o condiciones. Solicitar desde la pestaña original: se muestra aviso y total actualizado, sin crear la solicitud. Revisar y enviar nuevamente para registrar las nuevas condiciones. Un reenvío accidental no duplica la solicitud creada.
-8. Enviar otra pendiente y cancelarla como turista; enviar otra y rechazarla como prestador. Cancelar una confirmada con motivo y comprobar devolución única si continúa vigente.
-9. Crear una oferta desde el panel: comienza con cupo 0. Cargar disponibilidad mediante el ajuste separado. Probar un precio igual al anterior o inicio a más de 72 horas y observar errores. Los alojamientos requieren ocupación.
-10. Como `admin_demo`, administrar categorías y prestadores. Suspender un prestador: sus ofertas desaparecen y no se confirman pendientes. Restaurar habilitación para continuar.
-11. Crear una oferta con vencimiento cercano, enviar una pendiente y esperar. Ejecutar `expire_pending` y consultar estado e historial automático. Registrar otro turista: no ve solicitudes ajenas; otro prestador no accede a ofertas del primero.
+4. Como `prestador_demo`, abrir **Gestionar solicitudes** desde el menú de la web. El filtro inicial muestra pendientes y solo solicitudes de sus propias ofertas. Aceptar una: cambian estado, cupo y versión; el turista ve confirmación, historial y aviso. **Panel prestador** conserva también sus acciones anteriores. Los pagos se coordinan directamente.
+5. Enviar otra solicitud como turista. Como `admin_demo`, ingresar por el mismo formulario y abrir **Gestionar solicitudes**, sin entrar en `/admin/`. La administración autorizada ve todos los prestadores y puede aceptar o rechazar; el actor queda registrado y la aceptación avisa tanto al turista como al prestador. Filtrar por **Confirmada** o **Todos los estados** para revisar el resultado.
+6. Reproducir el formulario antiguo: con cupo 2, abrir **Editar oferta** en una pestaña. Confirmar una unidad desde otra pestaña y guardar solo la descripción en la primera. El cupo permanece en 1. Repetir desde el formulario general de administración.
+7. Abrir **Ajustar disponibilidad** dos veces para la misma oferta. Guardar un saldo desde la primera pestaña; al guardar desde la segunda aparece conflicto y no cambia el saldo. Usar el enlace para recargar, revisar el saldo y decidir un nuevo ajuste. Repetir desde `/admin/`, entrando en la oferta y su enlace **Ajustar disponibilidad**.
+8. Abrir un detalle como turista y, desde otra sesión, cambiar precio o condiciones. Solicitar desde la pestaña original: se muestra aviso y total actualizado, sin crear la solicitud. Revisar y enviar nuevamente para registrar las nuevas condiciones. Un reenvío accidental no duplica la solicitud creada.
+9. Enviar otra pendiente y cancelarla como turista; enviar otra y rechazarla como prestador. Cancelar una confirmada con motivo y comprobar devolución única si continúa vigente.
+10. Crear una oferta desde el panel: comienza con cupo 0. Cargar disponibilidad mediante el ajuste separado. Probar un precio igual al anterior o inicio a más de 72 horas y observar errores. Los alojamientos requieren ocupación.
+11. Como `admin_demo`, administrar categorías y prestadores. Suspender un prestador: sus ofertas desaparecen y no se confirman pendientes. Restaurar habilitación para continuar.
+12. Crear una oferta con vencimiento cercano, enviar una pendiente y esperar. Ejecutar `expire_pending` y consultar estado e historial automático. Registrar otro turista: no ve solicitudes ajenas; otro prestador no accede a ofertas del primero.
 
-Son operaciones conectadas a la base, con pruebas HTTP. La concurrencia PostgreSQL y el recorrido de navegador se verificaron el 20/11/2026; ver el apartado 10 y el cierre del apartado 11. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
+Son operaciones conectadas a la base, con pruebas HTTP. La gestión web de ambos roles se verificó localmente el 26/11/2026; ver el apartado 12. La concurrencia PostgreSQL y el recorrido de navegador se verificaron el 20/11/2026; ver el apartado 10 y el cierre del apartado 11. La recuperación de contraseña no forma parte de la demostración: faltan configuración de correo y sus plantillas.
 
 ## 6. Estado y porcentaje de avance (corte histórico)
 
@@ -230,7 +242,7 @@ Proyecto individual de Rodrigo Herrainz, para Universidad Kennedy, con entrega f
 
 ## 9. Limitaciones y referencias
 
-Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación está desplegada en Vercel con Neon y su evaluación remota se registra en el apartado 10. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. La interfaz utiliza recursos geométricos CSS locales.
+Estado histórico de la revisión previa: estaban pendientes la revisión visual, la concurrencia y los textos comerciales. La evaluación ejecutada el 20/11/2026 se detalla en el apartado 10; las ofertas continúan siendo ficticias. La aplicación está desplegada en Vercel con Neon y su evaluación remota se registra en el apartado 10. No incluye envío de correos, recuperación de contraseña operativa, integraciones ni cobros. Desde el 25/11/2026 la interfaz utiliza fotografías locales optimizadas en WebP; las imágenes de categoría son ilustrativas y las ofertas continúan siendo ficticias. Ver el apartado 12.
 
 Referencias del proyecto: requisitos funcionales, código y pruebas del repositorio, [notas oficiales de Django 5.2](https://docs.djangoproject.com/en/6.0/releases/5.2/) y [página oficial de descargas y soporte](https://www.djangoproject.com/download/).
 
@@ -263,7 +275,7 @@ python manage.py createsuperuser
 python manage.py check
 ```
 
-Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas demo vencen: actualizar sus fechas y disponibilidad desde el panel antes de la exposición.
+Crear usuarios de prueba y ofertas con fechas futuras. `seed_demo --password ...` sirve solo para una base aislada de evaluación; no ejecutar automáticamente en builds y no publicar la contraseña. Nunca volver a crear cuentas o migrar al recibir una petición HTTP. Las ofertas normales vencen según las fechas publicadas. Para mantener la demostración, configurar la renovación limitada a los tres ejemplos como se explica en el apartado 12.4; no inicializar ni renovar datos desde el catálogo o el build.
 
 6. Desplegar en Vercel. Verificar la portada, el CSS/JS, `/admin/`, inicio/cierre de sesión, publicación, ajuste de cupo, solicitud, aceptación, cancelación y copia histórica. **URL pública comprobada: https://ushlm.vercel.app/**. **Fecha de implementación: 20/11/2026**.
 
@@ -297,7 +309,7 @@ Documentación técnica de despliegue consultada el 20/11/2026: [Django en Verce
 - Evidencia del circuito: [confirmación y cupo](evidencias/confirmacion-demo.jpg). Evidencia móvil: [catálogo](evidencias/catalogo-movil.jpg).
 - Durante la puesta en marcha se registraron errores iniciales por tablas todavía no migradas. Se aplicaron las migraciones y después se verificaron catálogo, login y solicitud correctamente.
 - Se fijó la región de la función en `iad1`, junto a Neon, y el contador usa formato de 24 horas para evitar ambigüedad en el vencimiento.
-- Las ofertas ficticias vencen según sus fechas reales. Antes de exponer el proyecto, actualizar fechas y cupos desde las cuentas autorizadas; no modificar automáticamente las condiciones de reservas existentes.
+- En esta evaluación del 20/11/2026 las ofertas ficticias vencían sin renovación. Desde el 25/11/2026 la tarea demo publica nuevas ediciones, conservando las condiciones y fechas de las reservas anteriores; ver el apartado 12.4.
 
 Resultado de pruebas de base de datos: **56/56 aprobadas con PostgreSQL de Neon**, sin omisiones. Las pruebas se ejecutaron sobre una base aislada, no sobre los datos de demostración publicados. La migración y la carga de datos de demostración del sitio también finalizaron correctamente.
 
@@ -315,7 +327,7 @@ La tabla de 80 % del apartado 6 pertenece al avance del 12/11. No describe el es
 - **Vencimiento en pantalla:** el contador deshabilita el envío cuando vence una oferta abierta. La validación del servidor continúa siendo la autoridad.
 - **Recuperación:** comando `backup_project` con archivo nuevo de permisos 0600, instantánea consistente y precisión completa de fechas; procedimiento de restauración en una base aislada. Copias y credenciales excluidas de Git.
 
-Las ilustraciones CSS locales se conservan como decisión visual de la demostración académica; no se presentan como fotografías de servicios reales. Pagos, correo, inventario externo, reseñas, guías y expansión territorial continúan fuera del alcance funcional acordado.
+En este corte del 21/11/2026 el catálogo utilizaba ilustraciones CSS locales. Fueron reemplazadas por fotografías en la actualización del 25/11/2026; su procedencia y carácter ilustrativo se documentan en el apartado 12. Pagos, correo, inventario externo, reseñas, guías y expansión territorial continúan fuera del alcance funcional acordado.
 
 ### Resultados de esta revisión
 
@@ -324,7 +336,7 @@ Las ilustraciones CSS locales se conservan como decisión visual de la demostrac
 - Navegador local aislado: solicitud de dos unidades enviada mediante teclado; aviso al prestador recibido y marcado como leído; vista previa de publicación revisada sin guardar. [Avisos](evidencias/avisos.jpg) y [vista previa](evidencias/vista-previa.jpg).
 - Recuperación lógica local: comparación íntegra de usuarios, prestador, categorías, ofertas, solicitud, historial y aviso en otra base, con fechas completas y permisos de copia 0600. [Registro](evidencias/recuperacion.json). Una primera comprobación detectó la pérdida de microsegundos del serializador JSON estándar; se corrigió con un serializador de respaldo preciso y se repitió satisfactoriamente.
 - PostgreSQL, suite de la revisión: **63 pruebas aprobadas sin omisiones**, incluidas las cuatro concurrentes, en 744,397 s; base de pruebas eliminada al finalizar.
-- PostgreSQL, últimos cambios: **10 pruebas aprobadas sin omisiones** en una base aislada (124,211 s). La unión de ambas corridas cubre los 66 casos actuales; siete casos se repiten entre las corridas.
+- PostgreSQL, últimos cambios: **10 pruebas aprobadas sin omisiones** en una base aislada (124,211 s). La unión de ambas corridas cubre los 66 casos de ese corte; siete casos se repiten entre las corridas.
 - Recuperación en PostgreSQL Neon: respaldo y restauración en otra base en 321,580 s; 500 ofertas ficticias, usuario, prestador y categoría conservados con igualdad de todos los campos. Esta muestra no contenía reservas; el ensayo local complementario sí incluyó solicitud e historial. [Registro PostgreSQL](evidencias/recuperacion-postgresql.json).
 - Rendimiento y método reproducible: [procedimiento](docs/rendimiento.md), [script](scripts/benchmark_catalog.py) y [resultados](evidencias/rendimiento.json).
 
@@ -365,31 +377,195 @@ La tarea de respaldo cifrado está implementada y probada con datos ficticios en
 
 ### Cierre académico del respaldo — 21/11/2026
 
-El proyecto se entrega como trabajo académico. La tarea de respaldo, autenticación, cifrado, verificación e idempotencia está preparada. La configuración horaria se conserva como [ejemplo no activo](docs/cron-backup.example.json); `vercel.json` no contiene cron y `DAILY_BACKUP_ENABLED=0`. No se subieron datos productivos al nuevo almacén. Las comprobaciones con datos ficticios y las restauraciones documentadas cierran RNF-06 revisado; la operación diaria real se reserva para una futura decisión de explotación.
+El proyecto se entrega como trabajo académico. La tarea de respaldo, autenticación, cifrado, verificación e idempotencia está preparada. La configuración horaria del respaldo se conserva como [ejemplo no activo](docs/cron-backup.example.json); al cierre del 21/11/2026 `vercel.json` no contenía cron y `DAILY_BACKUP_ENABLED=0`. Desde el 25/11/2026 contiene únicamente el cron de renovación demo: el respaldo sigue desactivado. No se subieron datos productivos al nuevo almacén. Las comprobaciones con datos ficticios y las restauraciones documentadas cierran RNF-06 revisado; la operación diaria real se reserva para una futura decisión de explotación.
 
 Prueba de respaldo cifrado de extremo a extremo: copia de base temporal ficticia, subida privada, reenvío sin sobrescritura, descarga, descifrado y restauración en otra base; igualdad de todos los campos de ocho modelos, en 3,269 s. No se accedió a la base productiva y el archivo de prueba se eliminó. [Evidencia](evidencias/respaldo-academico-e2e.json).
 
 
-## Renovación de la demostración pública
+## 12. Evolución y estado actual — 26/11/2026
 
-Las ofertas académicas se renuevan en ciclos de 48 horas mediante una tarea
-protegida de Vercel, con copias nuevas que conservan el historial de las ediciones
-anteriores. Configuración y operación: [renovación demo](docs/demo-renovacion.md).
+Los apartados 6, 7, 10 y 11 conservan los cortes de evaluación anteriores con sus
+fechas. Esta sección documenta las mejoras posteriores y el comportamiento actual;
+los resultados históricos de PostgreSQL no se presentan como una nueva ejecución
+de la suite ampliada.
 
+### 12.1. Frontend, fotografías y textos
 
-## Gestión de solicitudes desde la web
+- Los templates existentes se formatearon para facilitar su lectura y mantenimiento.
+- Se mantuvo Django con renderizado del servidor, CSS y JavaScript puntual, sin
+  incorporar un framework de frontend ni un proceso de compilación de JavaScript.
+- Portada con fotografía horizontal en escritorio y composición vertical en móvil;
+  tarjetas para excursiones, alojamiento y autos, y galería del destino.
+- Once fotografías aportadas por Rodrigo Herrainz a través de Google Photos,
+  descargadas como copias locales optimizadas en WebP y sin metadatos EXIF. El sitio
+  no depende de Google Photos para servirlas. La foto del auto tiene un recorte que
+  excluye a la persona del fondo y la patente cubierta.
+- Imágenes adaptables con variantes de tamaño, dimensiones declaradas, carga
+  diferida de fotografías secundarias y prioridad de carga para la portada.
+  El logo y los íconos también cuentan con versiones livianas.
+- Navegación que se adapta al espacio disponible y conserva una sola lista de
+  enlaces. Sin JavaScript, los enlaces permanecen visibles. El menú móvil abre
+  desde **Menú** y cierra con Escape, devolviendo el foco al botón.
+- Filtros con cantidad de resultados, eliminación individual de filtros activos,
+  estado sin resultados y paginación. Formularios con ayudas y errores conservados;
+  foco visible y movimiento que respeta la preferencia de movimiento reducido.
+- Cantidades coherentes en catálogo, detalle, solicitudes e inventario:
+  **1 persona disponible**, **2 personas disponibles**, **2 habitaciones disponibles**
+  y **1 auto disponible**. Las unidades personalizadas se muestran sin adivinar su
+  plural; por ejemplo, `2 unidades de habitación familiar`. El precio por unidad
+  conserva el singular, como `/ persona`.
 
-El enlace **Gestionar solicitudes** abre `/gestion/solicitudes/` sin entrar al
-panel Django. Los prestadores ven solo las solicitudes de sus ofertas. El personal
-administrativo activo con permiso `market.change_booking` puede gestionarlas
-todas; un superusuario activo con `is_staff` dispone de ese permiso.
+Las imágenes de las categorías se identifican como **ilustrativas**: no certifican
+que una publicación corresponda al hotel, vehículo o excursión fotografiados.
+[Procedencia y variantes](static/market/images/photos/README.md) ·
+[Procedimiento de revisión del frontend](docs/frontend-dev.md).
 
-La pantalla comienza mostrando pendientes, permite filtrar estados y pagina
-24 solicitudes. Aceptar descuenta cupo una sola vez, registra al actor y avisa al
-turista y, si actuó la administración, también al prestador. Rechazar no descuenta
-cupo; cancelar una confirmación requiere motivo y devuelve cupo una sola vez si
-la oferta sigue vigente. Los permisos, vigencia, moderación y disponibilidad se
-validan nuevamente en el servidor. No se conceden permisos automáticamente.
+### 12.2. Cuentas, accesos y permisos
 
-Pruebas de roles, aislamiento, CSRF, inventario e historial:
-`python manage.py test market.test_booking_management`.
+Turistas, prestadores y administradores usan **el mismo formulario de ingreso**.
+El rol y sus permisos determinan las opciones del menú; no hay un selector de rol
+que conceda acceso por sí mismo.
+
+| Perfil | Cuenta demo | Acceso y capacidades |
+|---|---|---|
+| Turista | `turista_demo` | Catálogo, solicitud con total previo, **Mis solicitudes**, cancelación de pendientes propias y **Avisos**. |
+| Prestador | `prestador_demo` | **Panel prestador** para sus ofertas e inventario; **Gestionar solicitudes** para responder únicamente las de sus ofertas; avisos propios. |
+| Administrador | `admin_demo` | **Gestionar solicitudes** de todos los prestadores si la cuenta está activa, tiene `is_staff` y el permiso `market.change_booking`; `/admin/` para cuentas, prestadores, categorías y publicaciones. Un superusuario activo con `is_staff` dispone del permiso. |
+
+- **Crear cuenta** registra turistas. Para un prestador, la administración crea una
+  cuenta de usuario, le asocia un registro **Prestador** y lo habilita. No hay
+  registro ni habilitación automática de prestadores.
+- En una instalación nueva, `seed_demo --password ...` crea las tres cuentas con
+  la contraseña elegida. Si no se usa la semilla y falta una cuenta administradora,
+  ejecutar `python manage.py createsuperuser` en el entorno correspondiente.
+- En el sitio público ya existe `admin_demo`. Sus credenciales se conservan de forma
+  privada fuera de Git; no se incluyen en el README. La contraseña no se deduce del
+  nombre de usuario. Las contraseñas locales pueden diferir de las públicas.
+- No se otorgaron permisos automáticamente a cuentas existentes. Un usuario de
+  personal sin `market.change_booking` no obtiene gestión global por tener
+  solamente `is_staff`.
+
+### 12.3. Gestión de solicitudes desde la web
+
+Ruta: [`/gestion/solicitudes/`](https://ushlm.vercel.app/gestion/solicitudes/).
+El enlace **Gestionar solicitudes** aparece en el menú de las cuentas autorizadas
+y también en el panel del prestador. No requiere abrir la administración Django.
+
+1. El turista envía una solicitud: queda **Pendiente** y **no descuenta ni reserva
+   cupo**. La explicación se muestra junto al botón de solicitud.
+2. El prestador propietario o un administrador autorizado abre **Gestionar
+   solicitudes**. La pantalla comienza en pendientes, permite filtrar por estado
+   o ver todos y pagina 24 solicitudes.
+3. **Aceptar solicitud** vuelve a comprobar vigencia, habilitación, moderación y
+   cupo bajo los bloqueos prestador → oferta → solicitud. Confirma y descuenta la
+   cantidad una sola vez, incrementando la versión de inventario.
+4. Se registra quién realizó la operación. Si aceptó la administración, el motivo
+   del historial indica **Aceptada por administración** y se generan avisos para
+   turista y prestador. Si aceptó el prestador, se avisa al turista.
+5. **Rechazar** una pendiente no consume cupo. **Registrar cancelación** de una
+   confirmada exige motivo y devuelve cupo una sola vez si la oferta sigue vigente
+   y el prestador continúa habilitado.
+
+El turista no puede aceptar solicitudes, un prestador no puede gestionar las de
+otro y los cambios requieren POST con CSRF. Los permisos se verifican en el
+servidor; ocultar botones no es el control de autorización. El panel Django mantiene
+solicitudes e historial en modo de solo lectura: las transiciones se realizan por
+los servicios de negocio, sin editar el estado como un campo libre.
+
+Implementación: [vista](market/views.py), [servicios y permisos](market/services.py),
+[pantalla](templates/market/booking_management.html) y
+[pruebas de gestión](market/test_booking_management.py).
+
+### 12.4. Renovación de las ofertas demo
+
+El merge de `dev` a `master` trasladó código y fotografías, no la base SQLite de
+prueba a Neon. El catálogo público vacío se debió a que las tres ofertas originales
+habían vencido entre el 21 y el 22 de noviembre. Se publicaron nuevas ediciones sin
+reescribir las fechas o condiciones de las solicitudes anteriores.
+
+| Elemento | Configuración actual |
+|---|---|
+| Ofertas fuente | IDs `1,2,3`, exclusivamente los ejemplos ficticios del prestador demo, uno por categoría. |
+| Tarea desplegada | GET autenticado a `/internal/cron/renew-demo/`, definido en [vercel.json](vercel.json). |
+| Comprobación | Diaria con `0 9 * * *`: 09:00 UTC / 06:00 en Ushuaia, sujeta a la demora de la plataforma. |
+| Renovación efectiva | Una edición por ciclo continuo de 48 horas, con un ancla fija del 1/1/2026 a las 09:00 UTC. El primer ciclo se publica al activarlo y el siguiente se alinea a esa programación. No usa días alternos del mes. |
+| Vigencia | Vencimiento a las 60 horas; inicio del servicio a las 64, 66 y 68 horas de publicarse. |
+| Control persistente | `DemoRefreshState`, creado por la migración `0006`: bloquea el ciclo para evitar duplicar una edición en reintentos. |
+| Respaldo | Independiente: `DAILY_BACKUP_ENABLED=0`; no se activó su ejecución periódica. |
+
+Solo en **Production**:
+
+```text
+DEMO_RENEWAL_ENABLED=1
+DEMO_SOURCE_OFFER_IDS=1,2,3
+CRON_SECRET=<secreto privado configurado en Vercel>
+```
+
+La ruta rechaza peticiones sin secreto válido, fuera de Production o con la
+renovación desactivada. Los secretos no se envían en la URL ni se versionan.
+
+En cada renovación se crean copias con los datos e inventario de las plantillas,
+se cierran las ofertas de la edición anterior y vencen sus solicitudes pendientes
+con historial y aviso. Las confirmadas mantienen su copia histórica y una
+cancelación posterior no devuelve cupo a la nueva edición. No se eliminan cuentas,
+reservas ni publicaciones anteriores. La suspensión del prestador o la moderación
+de una oferta detiene la renovación y no se revierten decisiones administrativas.
+
+La primera renovación en Neon y las tres tarjetas públicas fueron comprobadas.
+La configuración se desplegó en Vercel; **no se observó todavía una ejecución
+programada posterior**. La prueba manual adicional del endpoint en producción no
+se ejecutó porque la revisión automática la bloqueó por su posible efecto de
+escritura. Las pruebas de idempotencia y ciclos sí se ejecutaron en la suite local.
+
+La renovación no garantiza disponibilidad si se agota el cupo o falla la plataforma.
+Para desactivarla, establecer `DEMO_RENEWAL_ENABLED=0` en Production y redesplegar.
+[Procedimiento completo, activación y comando manual](docs/demo-renovacion.md).
+
+### 12.5. Verificación del estado actual
+
+| Verificación | Resultado observado |
+|---|---|
+| Suite Django, 26/11/2026 | **97 pruebas: 93 aprobadas y 4 omitidas en SQLite**, en 27,831 s. Las omitidas requieren PostgreSQL real. |
+| JavaScript, última ejecución del 25/11/2026 | **5 pruebas aprobadas**, de cálculo de total y vencimiento. No sustituyen pruebas de navegador. |
+| Gestión web nueva | **10 pruebas específicas aprobadas**: roles, aislamiento, permiso administrativo, POST/CSRF, filtro, paginación, cupo, vigencia, moderación, cancelación e historial. |
+| Renovación demo | **9 pruebas específicas aprobadas**, incluidas idempotencia, cambio de mes/año, conservación de reservas y rollback. |
+| Cantidades en español | **5 pruebas específicas aprobadas**, con singular/plural, unidades personalizadas, escape HTML y coherencia entre vistas. |
+| Esquema y formato | `manage.py check`, `makemigrations --check --dry-run` y `git diff --check` sin incidencias en la última revisión. |
+| Navegador local, gestión web | Una solicitud aceptada como `admin_demo` y otra como `prestador_demo`, ambas desde `/gestion/solicitudes/`; estados confirmados, cupo de cada oferta de 2 a 1 y actores distintos registrados en el historial. |
+| Móvil, gestión web | Verificación a 320 px sin desbordamiento horizontal y sin errores de consola observados. |
+| Publicación | Commit de gestión desplegado en Production con estado READY; ruta pública nueva responde 302 al login cuando no hay sesión. Las aceptaciones de prueba se hicieron en la base local. |
+
+Las 10, 9 y 5 pruebas específicas están incluidas en las 97, no se suman aparte.
+La ejecución histórica en PostgreSQL del apartado 11 no demuestra que la suite
+ampliada de 97 se haya vuelto a ejecutar completa allí. La prueba visual tampoco
+constituye una auditoría de accesibilidad ni cubre todos los navegadores.
+
+Comprobaciones reproducibles, desde un entorno de prueba:
+
+```sh
+python manage.py check
+python manage.py makemigrations --check --dry-run
+python manage.py test --verbosity 2
+python manage.py test market.test_booking_management market.test_demo_renewal market.test_quantities
+node --test market/*.test.mjs
+git diff --check
+```
+
+Las capturas de las revisiones recientes se guardaron en `output/playwright/`
+(excluido de Git); las evidencias académicas versionadas permanecen en `evidencias/`.
+
+### 12.6. Historial reciente de publicación
+
+| Fecha local | Commit | Cambio |
+|---|---|---|
+| 21/11/2026 | [`5e761f5`](https://github.com/rherrainz/ushlm/commit/5e761f5) | Formato legible de los 14 templates existentes. |
+| 25/11/2026 | [`ad785b3`](https://github.com/rherrainz/ushlm/commit/ad785b3) | Frontend y fotografías desarrollados en `dev`, con revisión local. |
+| 25/11/2026 | [`fb29285`](https://github.com/rherrainz/ushlm/commit/fb29285) | Merge aprobado de `dev` a `master`. |
+| 25/11/2026 | [`989611a`](https://github.com/rherrainz/ushlm/commit/989611a) | Renovación protegida de las ofertas demo y estado persistente en Neon. |
+| 25/11/2026 | [`bd34f87`](https://github.com/rherrainz/ushlm/commit/bd34f87) | Concordancia de unidades/disponibilidad y aclaración del cupo pendiente. |
+| 26/11/2026 | [`f9ac171`](https://github.com/rherrainz/ushlm/commit/f9ac171) | Gestión web de solicitudes para administración y prestadores. |
+
+El flujo utilizado es desarrollo y revisión local, commit, publicación en GitHub
+y despliegue de `master` mediante la integración de Vercel. El frontend se revisó
+en `dev` y se mergeó después de la conformidad del responsable. Un rollback de código
+no revierte datos, reservas ni migraciones; el estado de Neon se gestiona aparte.
