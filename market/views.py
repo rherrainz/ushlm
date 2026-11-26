@@ -9,7 +9,7 @@ from datetime import date
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import DecimalField, ExpressionWrapper, F
@@ -18,7 +18,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST, require_GET
 from .forms import BookingForm, InventoryForm, OfferForm, SignupForm
 from .models import Booking, Category, Offer, Provider, Notification
-from .services import (OfferChanged, adjust_inventory, expire_pending, offer_quote,
+from .services import (OfferChanged, adjust_inventory, can_manage_all_bookings, expire_pending, offer_quote,
                        request_booking, transition, validate_quote)
 
 def catalog(request):
@@ -115,6 +115,29 @@ def dashboard(request):
     return render(request, 'market/dashboard.html', {'provider':provider, 'offers':Offer.objects.filter(provider=provider), 'bookings':Booking.objects.filter(offer__provider=provider).select_related('tourist','offer').prefetch_related('history').order_by('-created_at')})
 
 @login_required
+def booking_management(request):
+    manage_all = can_manage_all_bookings(request.user)
+    provider = Provider.objects.filter(owner=request.user).first()
+    if not manage_all and provider is None:
+        raise PermissionDenied
+    expire_pending()
+    items = Booking.objects.select_related('tourist', 'offer__provider').prefetch_related('history')
+    if not manage_all:
+        items = items.filter(offer__provider=provider)
+    status = request.GET.get('status', 'pending')
+    if status not in {'all', *Booking.Status.values}:
+        status = 'pending'
+    if status != 'all':
+        items = items.filter(status=status)
+    page = Paginator(items.order_by('-created_at', '-pk'), 24).get_page(request.GET.get('page'))
+    return render(request, 'market/booking_management.html', {
+        'bookings': page, 'page_obj': page, 'status': status,
+        'status_choices': Booking.Status.choices, 'manage_all': manage_all,
+        'can_manage_booking': True, 'management_page': True,
+    })
+
+
+@login_required
 def edit_offer(request, pk=None):
     provider = own_provider(request.user)
     # Lock on POST, using the same provider-first order as inventory operations.
@@ -145,7 +168,11 @@ def action(request, pk, action):
         transition(request.user, booking.pk, action, request.POST.get('reason',''))
         messages.success(request, 'Estado actualizado.')
     except ValidationError as exc: messages.error(request, ' '.join(exc.messages))
-    return redirect('bookings' if action == 'cancel_pending' else 'dashboard')
+    if action == 'cancel_pending':
+        return redirect('bookings')
+    if can_manage_all_bookings(request.user) or request.POST.get('return_to') == 'booking_management':
+        return redirect('booking_management')
+    return redirect('dashboard')
 
 
 @login_required

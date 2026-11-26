@@ -4,7 +4,10 @@
     <p class="eyebrow">PANEL DEL PRESTADOR</p>
     <h1>{{ provider.name }}</h1>
     <p>Habilitación: {% if provider.enabled %}Habilitado{% else %}Suspendido / pendiente de habilitación{% endif %}</p>
-    <a class="button" href="{% url 'new_offer' %}">Crear oferta</a>
+    <div class="actions">
+        <a class="button" href="{% url 'new_offer' %}">Crear oferta</a>
+        <a class="button subtle" href="{% url 'booking_management' %}">Gestionar solicitudes</a>
+    </div>
     <h2>Mis ofertas</h2>
     <div class="grid">
         {% for offer in offers %}

@@ -98,6 +98,10 @@ def request_booking(user, offer_id, quantity, contact, token, quote):
     Notification.objects.create(recipient=offer.provider.owner, booking=booking, offer=offer, message=f'Nueva solicitud #{booking.pk} para {offer.title}.'[:300])
     return booking
 
+def can_manage_all_bookings(user):
+    return user.is_active and user.is_staff and user.has_perm('market.change_booking')
+
+
 @transaction.atomic
 def transition(user, booking_id, action, reason=''):
     offer_id = Booking.objects.values_list('offer_id', flat=True).get(pk=booking_id)
@@ -106,7 +110,8 @@ def transition(user, booking_id, action, reason=''):
     owner = offer.provider.owner_id == user.pk
     tourist = booking.tourist_id == user.pk
     if action in ('confirm', 'reject', 'cancel_confirmed'):
-        if not owner or not user.is_active: raise PermissionDenied
+        if not user.is_active or not (owner or can_manage_all_bookings(user)):
+            raise PermissionDenied
     elif action == 'cancel_pending':
         if not tourist: raise PermissionDenied
     else: raise ValidationError('Acción desconocida.')
@@ -130,7 +135,7 @@ def transition(user, booking_id, action, reason=''):
             offer.stock -= booking.quantity
             offer.stock_version += 1
             offer.save(update_fields=['stock', 'stock_version'])
-            record(booking, 'confirmed', user, 'Aceptada por el prestador.')
+            record(booking, 'confirmed', user, 'Aceptada por el prestador.' if owner else 'Aceptada por administración.')
         elif action == 'reject': record(booking, 'rejected', user, reason)
         else: record(booking, 'cancelled', user, 'Cancelada por el turista.')
     return booking

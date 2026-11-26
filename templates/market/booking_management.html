@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar solicitudes · USH Last Minute{% endblock %}
+
+{% block content %}
+    <p class="eyebrow">{% if manage_all %}ADMINISTRACIÓN{% else %}PRESTADOR{% endif %}</p>
+    <h1>Gestionar solicitudes</h1>
+    {% if manage_all %}
+        <p>Revisá y gestioná las solicitudes de todos los prestadores desde esta pantalla.</p>
+    {% else %}
+        <p>Revisá y gestioná las solicitudes recibidas para tus ofertas.</p>
+    {% endif %}
+    <p class="notice">Aceptar una solicitud descuenta su cantidad del cupo disponible. El turista recibe un aviso y la operación queda en el historial.</p>
+    <form class="filters management-filters" method="get" action="{% url 'booking_management' %}">
+        <label for="booking-status">Estado
+            <select id="booking-status" name="status">
+                <option value="all" {% if status == 'all' %}selected{% endif %}>Todos los estados</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Filtrar solicitudes</button>
+    </form>
+    <p>{{ page_obj.paginator.count }} solicitud{{ page_obj.paginator.count|pluralize:'es' }}</p>
+    {% for booking in bookings %}
+        {% include 'market/booking_card.html' %}
+    {% empty %}
+        <div class="empty-state">
+            <h2>No hay solicitudes con este estado.</h2>
+            <p>Podés consultar el historial eligiendo todos los estados.</p>
+            <a href="{% url 'booking_management' %}?status=all">Ver todos los estados</a>
+        </div>
+    {% endfor %}
+    {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Páginas de solicitudes">
+            {% if page_obj.has_previous %}
+                <a href="?status={{ status }}&amp;page={{ page_obj.previous_page_number }}">Anterior</a>
+            {% endif %}
+            <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?status={{ status }}&amp;page={{ page_obj.next_page_number }}">Siguiente</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endblock %}

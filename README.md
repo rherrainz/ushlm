@@ -48,7 +48,7 @@ Reglas implementadas:
 - La solicitud conserva una copia histórica de precio, moneda, descripción, condiciones y datos del servicio/prestador. Cambios posteriores no alteran esa copia. Un UUID único evita duplicados por reenvío del mismo formulario; el reenvío de una solicitud ya creada devuelve la existente, aunque la oferta haya cambiado después.
 - El turista cancela pendientes propias. El prestador rechaza pendientes o cancela confirmadas propias con motivo obligatorio. El cupo se devuelve únicamente si la oferta sigue vigente y el prestador habilitado, una sola vez.
 - Las pendientes vencen al expirar su publicación; el comando periódico y los listados materializan ese estado y su historial. Sin ejecutar el comando, el servidor igualmente impide aceptar una pendiente vencida. Cerrar o suspender una oferta no adelanta automáticamente el vencimiento de sus pendientes.
-- Escrituras mediante POST y CSRF, validación del servidor y errores conservando los datos del formulario. Listados autenticados filtrados por propietario. Relaciones protegidas conservan actividad e historial; el administrador no puede borrar entidades ni editar solicitudes/historial directamente.
+- Escrituras mediante POST y CSRF, validación del servidor y errores conservando los datos del formulario. Listados autenticados filtrados por propietario; la administración con permiso `market.change_booking` puede gestionar todas las solicitudes desde la web. Relaciones protegidas conservan actividad e historial; el panel Django no permite borrar entidades ni editar solicitudes/historial directamente.
 
 **Exclusiones:** cobros, integraciones de inventario externo, guías freelance, múltiples destinos y reseñas. Los pagos se coordinan con el prestador y el inventario externo se carga manualmente.
 
@@ -211,7 +211,7 @@ Incidencias corregidas:
 - El catálogo priorizaba vencimiento: ahora prioriza porcentaje de descuento y sincroniza el selector con el criterio efectivo.
 - Faltaba total previo y control de información obsoleta: vista previa decimal y validación de referencia firmada dentro de la transacción; cambios comerciales requieren revisión, sin creación silenciosa.
 
-La carga de inventario externo sigue siendo manual: una versión válida impide aplicar un formulario obsoleto, pero no certifica que el saldo ingresado sea comercialmente correcto. El administrador no modifica solicitudes directamente. Mantener respaldos, ejecutar migraciones/pruebas al cambiar reglas y programar `expire_pending` en el entorno de ejecución.
+La carga de inventario externo sigue siendo manual: una versión válida impide aplicar un formulario obsoleto, pero no certifica que el saldo ingresado sea comercialmente correcto. La administración gestiona solicitudes desde la web con el permiso `market.change_booking`; el panel Django conserva solicitudes e historial en modo de solo lectura. Mantener respaldos, ejecutar migraciones/pruebas al cambiar reglas y programar `expire_pending` en el entorno de ejecución.
 
 ## 8. Planificación y participación
 
@@ -375,3 +375,21 @@ Prueba de respaldo cifrado de extremo a extremo: copia de base temporal ficticia
 Las ofertas académicas se renuevan en ciclos de 48 horas mediante una tarea
 protegida de Vercel, con copias nuevas que conservan el historial de las ediciones
 anteriores. Configuración y operación: [renovación demo](docs/demo-renovacion.md).
+
+
+## Gestión de solicitudes desde la web
+
+El enlace **Gestionar solicitudes** abre `/gestion/solicitudes/` sin entrar al
+panel Django. Los prestadores ven solo las solicitudes de sus ofertas. El personal
+administrativo activo con permiso `market.change_booking` puede gestionarlas
+todas; un superusuario activo con `is_staff` dispone de ese permiso.
+
+La pantalla comienza mostrando pendientes, permite filtrar estados y pagina
+24 solicitudes. Aceptar descuenta cupo una sola vez, registra al actor y avisa al
+turista y, si actuó la administración, también al prestador. Rechazar no descuenta
+cupo; cancelar una confirmación requiere motivo y devuelve cupo una sola vez si
+la oferta sigue vigente. Los permisos, vigencia, moderación y disponibilidad se
+validan nuevamente en el servidor. No se conceden permisos automáticamente.
+
+Pruebas de roles, aislamiento, CSRF, inventario e historial:
+`python manage.py test market.test_booking_management`.

@@ -17,16 +17,19 @@
             {% endfor %}
         </ol>
     </details>
-    {% if provider %}
+    {% if provider or can_manage_booking %}
+        <p>Prestador: {{ booking.service.provider }}</p>
         <p>Turista: {{ booking.tourist.username }} · Contacto: {{ booking.contact }}</p>
         {% if booking.status == 'pending' %}
             <div class="actions">
                 <form method="post" action="{% url 'action' booking.pk 'confirm' %}">
                     {% csrf_token %}
+                {% if management_page %}<input type="hidden" name="return_to" value="booking_management">{% endif %}
                     <button>Aceptar solicitud</button>
                 </form>
                 <form method="post" action="{% url 'action' booking.pk 'reject' %}">
                     {% csrf_token %}
+                {% if management_page %}<input type="hidden" name="return_to" value="booking_management">{% endif %}
                     <label>
                         Motivo (opcional)
                         <input name="reason" maxlength="500">
@@ -37,6 +40,7 @@
         {% elif booking.status == 'confirmed' %}
             <form method="post" action="{% url 'action' booking.pk 'cancel_confirmed' %}">
                 {% csrf_token %}
+                {% if management_page %}<input type="hidden" name="return_to" value="booking_management">{% endif %}
                 <label>
                     Motivo de cancelación
                     <input name="reason" required maxlength="500">
