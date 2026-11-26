@@ -368,3 +368,10 @@ La tarea de respaldo cifrado está implementada y probada con datos ficticios en
 El proyecto se entrega como trabajo académico. La tarea de respaldo, autenticación, cifrado, verificación e idempotencia está preparada. La configuración horaria se conserva como [ejemplo no activo](docs/cron-backup.example.json); `vercel.json` no contiene cron y `DAILY_BACKUP_ENABLED=0`. No se subieron datos productivos al nuevo almacén. Las comprobaciones con datos ficticios y las restauraciones documentadas cierran RNF-06 revisado; la operación diaria real se reserva para una futura decisión de explotación.
 
 Prueba de respaldo cifrado de extremo a extremo: copia de base temporal ficticia, subida privada, reenvío sin sobrescritura, descarga, descifrado y restauración en otra base; igualdad de todos los campos de ocho modelos, en 3,269 s. No se accedió a la base productiva y el archivo de prueba se eliminó. [Evidencia](evidencias/respaldo-academico-e2e.json).
+
+
+## Renovación de la demostración pública
+
+Las ofertas académicas se renuevan en ciclos de 48 horas mediante una tarea
+protegida de Vercel, con copias nuevas que conservan el historial de las ediciones
+anteriores. Configuración y operación: [renovación demo](docs/demo-renovacion.md).

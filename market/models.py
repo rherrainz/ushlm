@@ -140,3 +140,11 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at', '-pk']
         indexes = [models.Index(fields=['recipient', 'read_at'], name='notification_unread_idx')]
+
+
+class DemoRefreshState(models.Model):
+    """Durable, locked cursor for the explicitly configured academic demo."""
+    key = models.CharField(max_length=40, primary_key=True)
+    cycle_started_at = models.DateTimeField(null=True, blank=True)
+    refreshed_at = models.DateTimeField(null=True, blank=True)
+    active_offer_ids = models.JSONField(default=list)

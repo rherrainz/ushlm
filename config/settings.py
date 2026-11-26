@@ -82,3 +82,11 @@ VERCEL_ENVIRONMENT = os.getenv('VERCEL_ENV', '')
 CRON_SECRET = os.getenv('CRON_SECRET', '')
 BACKUP_ENCRYPTION_KEY = os.getenv('BACKUP_ENCRYPTION_KEY', '')
 BLOB_STORE_ID = os.getenv('BLOB_STORE_ID', '')
+
+# Academic demo renewal. An explicit allowlist prevents touching real offers.
+DEMO_RENEWAL_ENABLED = os.getenv('DEMO_RENEWAL_ENABLED', '0') == '1'
+try:
+    DEMO_SOURCE_OFFER_IDS = tuple(int(value.strip()) for value in
+                                 os.getenv('DEMO_SOURCE_OFFER_IDS', '').split(',') if value.strip())
+except ValueError as exc:
+    raise ImproperlyConfigured('DEMO_SOURCE_OFFER_IDS debe contener IDs enteros separados por comas.') from exc

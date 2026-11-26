@@ -210,3 +210,21 @@ def daily_backup(request):
         # Do not log exception messages/tracebacks containing credentials or rows.
         logging.getLogger(__name__).error('Daily backup failed: %s', type(exc).__name__)
         return JsonResponse({'error': 'Backup failed; check private operational logs.'}, status=503)
+
+
+@require_GET
+@never_cache
+def renew_demo(request):
+    secret = settings.CRON_SECRET
+    expected = f'Bearer {secret}'
+    provided = request.headers.get('Authorization', '')
+    if not secret or not secrets.compare_digest(provided.encode(), expected.encode()):
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    if not settings.DEMO_RENEWAL_ENABLED or settings.VERCEL_ENVIRONMENT != 'production':
+        return JsonResponse({'error': 'Demo renewal disabled'}, status=503)
+    from .demo_renewal import renew_demo_offers
+    try:
+        return JsonResponse(renew_demo_offers())
+    except Exception as exc:
+        logging.getLogger(__name__).error('Demo renewal failed: %s', type(exc).__name__)
+        return JsonResponse({'error': 'Demo renewal failed; check private operational logs.'}, status=503)
