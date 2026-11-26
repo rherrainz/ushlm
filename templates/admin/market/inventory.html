@@ -1,7 +1,8 @@
 {% extends 'admin/base_site.html' %}
+{% load market_quantities %}
 {% block content %}
     <h1>Ajustar disponibilidad: {{ offer.title }}</h1>
-    <p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
+    <p>Cupo actual: <strong>{{ offer.stock|quantity_unit:offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
     <p>Ingresá el saldo completo. Un cambio de inventario posterior a la apertura del formulario exige revisar el ajuste.</p>
     <form method="post">
         {% csrf_token %}

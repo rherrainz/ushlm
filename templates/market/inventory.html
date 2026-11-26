@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+{% load market_quantities %}
 
 {% block content %}
     <section class="form-page">
         <h1>Ajustar disponibilidad</h1>
         <h2>{{ offer.title }}</h2>
-        <p>Cupo actual: <strong>{{ offer.stock }} {{ offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
+        <p>Cupo actual: <strong>{{ offer.stock|quantity_unit:offer.unit }}</strong>. Versión: {{ offer.stock_version }}.</p>
         <p>Indicá el saldo disponible completo. Si hay una confirmación, devolución u otro ajuste desde que abriste este formulario, deberás revisar el saldo antes de guardar.</p>
         <form method="post">
             {% csrf_token %}

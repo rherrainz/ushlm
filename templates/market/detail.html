@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load market_quantities %}
 {% load static %}
 {% block content %}
     <a href="/">← Volver a las ofertas</a>
@@ -14,7 +15,7 @@
             <p>{{ offer.description|linebreaksbr }}</p>
             <h2>Tu experiencia, en detalle</h2>
             <p>Inicio: {{ offer.starts_at|date:'d/m/Y H:i' }} · Fin: {{ offer.ends_at|date:'d/m/Y H:i' }} (Ushuaia)</p>
-            <p>Unidad: {{ offer.unit }}{% if offer.occupancy %} · Ocupación: {{ offer.occupancy }} personas por unidad{% endif %}</p>
+            <p>Unidad: {{ offer.unit }}{% if offer.occupancy %} · Ocupación: {{ offer.occupancy|quantity_unit:"persona" }} por unidad{% endif %}</p>
             <h2>Condiciones</h2>
             <p>{{ offer.conditions|linebreaksbr }}</p>
             <h2>Tu prestador</h2>
@@ -24,13 +25,14 @@
             <p class="eyebrow">TU PRÓXIMO PLAN</p>
             <p class="old">{{ offer.currency }} {{ offer.reference_price }}</p>
             <p class="price">{{ offer.currency }} {{ offer.price }} <small>/ {{ offer.unit }}</small></p>
-            <p>{{ offer.stock }} unidades disponibles</p>
+            <p>{{ offer.stock|quantity_unit:offer.unit }} disponible{{ offer.stock|pluralize }}</p>
             <p class="timer" data-expires="{{ offer.expires_at|date:'c' }}">Vence {{ offer.expires_at|date:'d/m/Y H:i' }}</p>
             <p>Revisá el total y las condiciones antes de solicitar. La solicitud no garantiza disponibilidad. No se cobra en esta plataforma.</p>
             {% if user.is_authenticated %}
                 {% if not user.provider and not user.is_staff %}
                     <form method="post"
                           action="{% url 'book' offer.pk %}"
+                          aria-describedby="booking-availability-hint"
                           data-booking-preview
                           data-offer-expiry="{{ offer.expires_at|date:'c' }}"
                           data-unit-cents="{{ unit_cents }}"
@@ -51,6 +53,9 @@
                             </strong>
                         </p>
                         <button type="submit" name="intent" value="preview" class="subtle">Recalcular total</button>
+                        <p id="booking-availability-hint" class="fine-print">
+                            Enviar la solicitud no reserva cupo. La disponibilidad se descuenta cuando el prestador la acepta.
+                        </p>
                         <button type="submit" name="intent" value="request">Solicitar al prestador</button>
                     </form>
                 {% else %}

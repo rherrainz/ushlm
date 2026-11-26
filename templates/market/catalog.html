@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load market_quantities %}
 {% load static %}
 
 {% block content %}
@@ -96,7 +97,7 @@
                         <p>{{ offer.starts_at|date:'d/m H:i' }} → {{ offer.ends_at|date:'d/m H:i' }}</p>
                         <p class="old">{{ offer.currency }} {{ offer.reference_price }}</p>
                         <p class="price">{{ offer.currency }} {{ offer.price }} <small>/ {{ offer.unit }}</small></p>
-                        <p>{{ offer.stock }} {{ offer.unit }} disponibles{% if offer.occupancy %} · Hasta {{ offer.occupancy }} personas por unidad{% endif %}</p>
+                        <p>{{ offer.stock|quantity_unit:offer.unit }} disponible{{ offer.stock|pluralize }}{% if offer.occupancy %} · Hasta {{ offer.occupancy|quantity_unit:"persona" }} por unidad{% endif %}</p>
                         <p class="timer" data-expires="{{ offer.expires_at|date:'c' }}">Vence {{ offer.expires_at|date:'d/m H:i' }}</p>
                         <a class="button full" href="{% url 'detail' offer.pk %}">Ver oportunidad →</a>
                     </div>

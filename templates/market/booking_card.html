@@ -1,8 +1,9 @@
+{% load market_quantities %}
 {% load market_dates %}
 <article class="booking">
     <p class="eyebrow">SOLICITUD #{{ booking.pk }} · {{ booking.created_at|date:'d/m/Y H:i' }}</p>
     <h2>{{ booking.service.title }}</h2>
-    <p><strong class="status status-{{ booking.status }}">Estado: {{ booking.get_status_display }}</strong> · {{ booking.quantity }} {{ booking.service.unit }}</p>
+    <p><strong class="status status-{{ booking.status }}">Estado: {{ booking.get_status_display }}</strong> · {{ booking.quantity|quantity_unit:booking.service.unit }}</p>
     <p>{{ booking.service.starts_at|local_service_date }} → {{ booking.service.ends_at|local_service_date }} (Ushuaia) · {{ booking.service.location }}</p>
     <p>Precio registrado: {{ booking.currency }} {{ booking.price }} · <strong>Total: {{ booking.currency }} {{ booking.total }}</strong></p>
     <p>{{ booking.description }}</p>
